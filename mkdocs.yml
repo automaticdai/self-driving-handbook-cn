@@ -20,6 +20,7 @@ nav:
     - intro/main.md
     - intro/define.md
     - intro/category.md
+    - intro/history.md
   - '2. 系统':
     - system/main.md
     - system/vehicle.md
@@ -42,11 +43,17 @@ nav:
     - algorithm/laser_processing.md
     - algorithm/localisation.md
     - algorithm/path_planning.md
+    - algorithm/prediction.md
     - algorithm/decision_making.md
+    - algorithm/control.md
+    - algorithm/end_to_end.md
     - algorithm/nlp.md
   - '5. 实例':
     - casestudy/main.md
     - casestudy/apollo.md
+    - casestudy/waymo.md
+    - casestudy/tesla.md
+    - casestudy/chinese_players.md
 
 
 # Theme

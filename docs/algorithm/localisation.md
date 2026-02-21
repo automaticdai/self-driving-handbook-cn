@@ -1,18 +1,145 @@
 # 地图与定位
 
-## Map Representation
-- **metric**: The metric framework is the most common for humans and considers a two-dimensional space in which it places the objects. The objects are placed with precise coordinates. This representation is very useful, but is **sensitive to noise** and it is **difficult to calculate the distances precisely**.
-- **topological**: The topological framework only considers places and relations between them. Often, the distances between places are stored. The map is then a graph, in which the **nodes corresponds to places** and **arcs correspond to the paths**.
-- Voronoi diagram
-- Grid
+自动驾驶车辆需要在全局和局部两个尺度上回答"我在哪里"这个问题。定位（Localization）精度直接决定了轨迹规划和控制的可行性——自动驾驶通常要求厘米级定位精度，远超普通导航 GPS 的米级精度。车辆一旦偏离车道超过 20 cm，即可能引发安全事故。
 
-### Advantages of topological maps:
-- Only sparse data storage
-- Representation matches problem description: e.g.
-instruct robot to move between discrete locations
-- Recognition only requires consistency, not accuracy
 
-### Advantages of metric maps
-- Can extrapolate between known locations
-- Can derive novel shortcuts
-- Common representation to fuse sensor/motor data
+## 定位方法体系
+
+### GNSS/RTK 定位
+
+全球导航卫星系统（GNSS，Global Navigation Satellite System）通过测量卫星信号传播时间计算接收机位置。现有四大系统：美国 GPS、中国北斗（BDS）、欧洲 Galileo、俄罗斯 GLONASS。
+
+| 定位方式 | 精度 | 技术原理 | 局限 |
+| --- | --- | --- | --- |
+| 单点 GPS | 1–5 m | 测量伪距，受大气层和多径效应影响 | 无法满足自动驾驶需求 |
+| DGPS（差分 GPS） | 0.5–1 m | 已知参考站广播误差修正 | 精度仍不足 |
+| RTK（实时动态差分） | 1–2 cm | 传输载波相位差分，实时解算整周模糊度 | 需密集基站、信号良好环境 |
+
+**GNSS 的主要局限：**
+- 城市峡谷：高楼、隧道、立交桥遮挡信号，产生多径效应
+- 更新频率低：通常仅 1–10 Hz，无法满足实时控制需求
+- 需配合 IMU 进行航位推算（Dead Reckoning）填补信号丢失间隔
+
+### 惯性导航（IMU）
+
+惯性测量单元（IMU，Inertial Measurement Unit）集成三轴加速度计和三轴陀螺仪，通过积分计算相对位移和姿态：
+
+$$\dot{p} = v, \quad \dot{v} = R a_{\text{body}} - g, \quad \dot{R} = R [\omega]_\times$$
+
+其中 $p$ 为位置，$v$ 为速度，$R$ 为旋转矩阵，$a_{\text{body}}$ 为加速度计读数，$\omega$ 为陀螺仪角速度，$g$ 为重力向量。
+
+| 等级 | 陀螺仪漂移 | 加速度计偏差 | 典型应用 |
+| --- | --- | --- | --- |
+| 消费级 | > 10 °/h | > 1 mg | 手机姿态、步行导航 |
+| 战术级 | 0.1–10 °/h | 0.1–1 mg | 无人机、机器人 |
+| 导航级 | < 0.01 °/h | < 0.05 mg | 自动驾驶、航空航天 |
+
+- **优点**：高频（100–1000 Hz）、全环境可用（不依赖外部信号）
+- **缺点**：积分误差累积（漂移），单独使用数秒后误差即达数米
+
+### 高精地图匹配定位
+
+将实时传感器数据与预先建立的高精度地图对比，通过最大化匹配度确定车辆位姿：
+
+**高精地图通常包含三层：**
+1. **点云层**：激光扫描的三维点云地图，用于 LiDAR 实时匹配
+2. **特征层**：路面标线、灯杆、护栏等几何特征，用于快速匹配
+3. **语义层**：车道线拓扑、信号灯位置、限速等道路属性
+
+**国内主要高精地图厂商：** 百度地图、高德地图、四维图新（与 HERE 合资）、Momenta 众包地图。
+
+**局限：** 地图覆盖率和更新频率是制约高精地图定位普及的核心瓶颈；施工区域、新开通道路等场景地图滞后严重。
+
+
+## SLAM（同步定位与建图）
+
+SLAM（Simultaneous Localization and Mapping，同步定位与建图）在未知或部分已知环境中同步估计车辆位姿和构建地图，是自动驾驶建图与定位的关键技术。
+
+### 问题建模
+
+SLAM 本质上是在线贝叶斯推断问题，联合估计：
+- 车辆历史轨迹 $x_{1:t}$
+- 地图 $m$
+- 在传感器观测 $z_{1:t}$ 和控制输入 $u_{1:t}$ 条件下的后验概率：
+
+$$p(x_{1:t}, m \mid z_{1:t}, u_{1:t}) \propto p(z_t \mid x_t, m) \cdot p(x_t \mid x_{t-1}, u_t) \cdot p(x_{1:t-1}, m \mid z_{1:t-1}, u_{1:t-1})$$
+
+### 激光 SLAM
+
+基于 LiDAR 点云的 SLAM 是自动驾驶的主流建图路线。
+
+**前端里程计（扫描匹配）：**
+
+| 算法 | 原理 | 特点 |
+| --- | --- | --- |
+| ICP（迭代最近点） | 迭代寻找最近点对，最小化点间距离 | 精度高，对初值敏感，计算量大 |
+| NDT（正态分布变换） | 将参考帧建模为正态分布网格进行配准 | 速度快，对点密度不敏感 |
+| LOAM / LeGO-LOAM | 提取边缘（edge）和平面（planar）特征分别匹配 | 精度与效率均优，适合实时应用 |
+
+**后端优化：**
+- **图优化（Graph Optimization）**：将位姿建模为图的节点，传感器测量约束为边，用 g2o / GTSAM 求解非线性最小二乘
+- **回环检测（Loop Closure）**：识别重复经过的场景（用描述子如 Scan Context），添加回环约束消除累积误差
+
+**代表系统：** LOAM（Zhang & Singh, 2014）、LIO-SAM（紧耦合 LiDAR-IMU）、LEGO-LOAM（轻量化地面车辆专用）。
+
+### 视觉 SLAM
+
+基于摄像头的 SLAM 成本更低、信息更丰富，是纯视觉自动驾驶路线的核心：
+
+| 系统 | 类型 | 传感器 | 核心方法 |
+| --- | --- | --- | --- |
+| ORB-SLAM3 | 特征点法 | 单目/双目/RGB-D | ORB 特征 + 词袋回环检测 |
+| DSO | 直接法 | 单目 | 光度一致性联合优化 |
+| VINS-Mono | 视觉惯性里程计 | 单目+IMU | 紧耦合预积分优化 |
+| SVO | 半直接法 | 单目 | 快速特征跟踪+深度滤波 |
+
+**视觉 SLAM 主要挑战：**
+- 无纹理区域（白墙、沥青路面）特征匮乏
+- 光照剧烈变化（隧道出入口、日落逆光）
+- 运动模糊（急转弯高速行驶）
+
+
+## 融合定位架构
+
+单一传感器定位均有不足，自动驾驶采用多传感器深度融合实现鲁棒定位：
+
+```
+GNSS/RTK ──────────────────────────┐
+                                    │
+ LiDAR 扫描匹配 ─────────────────── ┤  融合状态估计  ──► 6-DOF 全局位姿
+                                    │  (EKF / 因子图)    + 不确定性协方差
+ Camera 视觉里程计 ──────────────── ┤
+                                    │
+ IMU (100–1000 Hz) ────────────────┘
+          │
+          └──► 高频姿态预测（帧间外推）
+```
+
+**松耦合 vs 紧耦合：**
+
+| 架构 | 描述 | 优势 | 劣势 |
+| --- | --- | --- | --- |
+| 松耦合（Loose Coupling） | 各传感器独立输出位姿后融合 | 实现简单，模块化 | 中间量损失信息 |
+| 紧耦合（Tight Coupling） | 直接融合原始观测量（伪距、特征点） | 精度更高，能在 GNSS 退化时鲁棒 | 实现复杂 |
+
+**扩展卡尔曼滤波（EKF）** 是最常用的实时融合框架，将非线性系统线性化后进行状态估计。大型系统中常采用**因子图优化**（GTSAM、Ceres Solver），支持多传感器增量批量优化。
+
+
+## 定位评估指标
+
+| 指标 | 全称 | 计算方式 | 典型要求 |
+| --- | --- | --- | --- |
+| ATE | 绝对轨迹误差 | $\sqrt{\frac{1}{T}\sum_t \|p_t - \hat{p}_t\|^2}$ | < 10 cm |
+| RPE | 相对位姿误差 | 相邻帧位姿变化误差均值 | < 0.1% 行驶距离 |
+| 横向误差 | 车道中心偏离量 | $|d_t|$ 均值 | < 20 cm |
+| 定位成功率 | 满足精度要求比例 | 横向误差 < 阈值的帧比例 | > 99.9% |
+| 可用性 | 系统正常定位的时间比例 | 正常运行时长 / 总时长 | > 99.95% |
+
+
+## 参考资料
+
+1. J. Zhang and S. Singh. LOAM: Lidar Odometry and Mapping in Real-time. RSS, 2014.
+2. T. Qin, P. Li, and S. Shen. VINS-Mono: A Robust and Versatile Monocular Visual-Inertial State Estimator. IEEE T-RO, 2018.
+3. C. Cadena et al. Past, Present, and Future of Simultaneous Localization and Mapping: Toward the Robust-Perception Age. IEEE T-RO, 2016.
+4. T. Shan and B. Englot. LeGO-LOAM: Lightweight and Ground-Optimized Lidar Odometry and Mapping. IROS, 2018.
+5. 百度 Apollo. 自动驾驶高精地图技术白皮书, 2022.
