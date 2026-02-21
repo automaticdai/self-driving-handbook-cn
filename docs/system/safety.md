@@ -1,36 +1,192 @@
 # 系统安全保障
 
-自动驾驶和人工智能是目前最火热的话题了。在功能性不断完善的同时，系统的安全往往被人忽略。本文介绍目前自动驾驶系统中存在的安全验证困境，已经可能的解决方法。
+自动驾驶系统的安全性远比普通软件系统复杂——一旦失效可能直接危及生命。与此同时，自动驾驶系统高度依赖人工智能，其行为难以用传统方法完全验证。本章介绍自动驾驶领域的功能安全标准、安全验证方法以及行业最佳实践。
 
 
-如何验证自动驾驶
+## 安全标准体系
 
-- ISO 26262 & IEC 61508的不足
-- 系统无法先验
-- 使用人工智能导致的困难
-- Fail safe & fail operational
+自动驾驶安全由多个互补标准从不同维度覆盖：
 
-
-
-## RAS Safety Standard
-
-1. Quality management system(ISO9001, IATF16949..) cover product quality, zero defect, zero DPPM
-2. Functional Safety (ISO26262) cover systematic fault and random fault
-3. SOTIF cover limitation of intended function
-4. ASPICE cover software process and capability
-5. Mobileye RSS (Responsibility-Sensitive Safety) provide model for safety
-6. NVIDA Safety Force Field protect against real-world traffic
-7. E-NCAP and C-NCAP for new car assessment
-8. Cybersecurity to cover system security hole
+| 标准 | 制定组织 | 关注维度 | 核心方法 |
+| --- | --- | --- | --- |
+| ISO 26262 | ISO | 功能安全（系统性和随机性硬件故障） | ASIL 等级、V字开发、FMEA/FTA |
+| ISO 21448 (SOTIF) | ISO | 预期功能安全（感知和AI的性能局限） | 场景分类、覆盖度测试 |
+| ISO/SAE 21434 | ISO/SAE | 汽车网络安全（Cybersecurity） | TARA 威胁分析、纵深防御 |
+| UL 4600 | UL | 自动驾驶系统整体安全评估框架 | 安全案例（Safety Case） |
+| RSS | Mobileye | 责任敏感安全（数学化安全保证） | 安全距离公式、责任归属 |
+| E/C-NCAP | NCAP 联盟 | 新车碰撞安全评估 | 实车测试、评星 |
 
 
+## ISO 26262：功能安全
 
-## ASIL: Automotive Safety Integrity Level
+ISO 26262 是汽车行业最核心的功能安全标准，要求系统在存在故障的情况下仍能安全运行或安全停机。
 
-![1565548787832_2](assets/1565548787832_2.png)
+### ASIL 汽车安全完整性等级
 
----------
+汽车安全完整性等级（ASIL，Automotive Safety Integrity Level）分为 QM/A/B/C/D 五档，D 级为最高要求：
+
+| 等级 | 故障后果 | 设计要求 | 典型应用 |
+| --- | --- | --- | --- |
+| QM（质量管理） | 无安全风险 | 常规质量流程 | 车载娱乐、空调控制 |
+| ASIL-A | 轻微伤害风险 | 基础安全措施 | 雨刷、车窗升降 |
+| ASIL-B | 中等伤害风险 | 故障检测与响应 | 辅助照明、泊车传感器 |
+| ASIL-C | 严重伤害风险 | 冗余设计 | 电子稳定控制（ESC） |
+| ASIL-D | 危及生命 | 最高冗余 + 形式验证 | 线控制动、安全气囊、线控转向 |
+
+### ASIL 等级确定
+
+ASIL 等级由三个因素的组合决定：
+
+- **严重度（Severity, S0–S3）**：S0 无伤害 → S3 危及生命
+- **暴露率（Exposure, E0–E4）**：E0 不可能 → E4 连续暴露（如行驶中的制动）
+- **可控性（Controllability, C0–C3）**：C0 完全可控 → C3 几乎不可控
+
+高严重度 × 高暴露率 × 低可控性 → 高 ASIL 等级。
+
+### V 字形开发模型
+
+ISO 26262 要求贯穿整个产品生命周期的 V 字形开发，左边为设计分解，右边为集成验证：
+
+```
+系统需求分析 ─────────────────────────────► 系统验证测试
+      │                                           ▲
+      ▼                                           │
+系统功能设计 ──────────────────────────► 系统集成测试
+      │                                           ▲
+      ▼                                           │
+硬件/软件设计 ──────────────────────► 硬件/软件集成
+      │                                           ▲
+      ▼                                           │
+软件详细设计 ──────────────────────────► 软件单元测试
+```
+
+每个阶段需要完成相应的安全分析，并输出**安全案例**（Safety Case）文档证明设计满足安全目标。
+
+### FMEA 与 FTA
+
+- **FMEA（失效模式与影响分析）**：自底向上，逐一分析每个组件的失效模式（断路、短路、输出错误等）及其对系统的影响，评估风险优先级（RPN = 严重度 × 频率 × 可检测性）
+- **FTA（故障树分析）**：自顶向下，从系统级危害（如"车辆无法制动"）追溯到底层原因，建立布尔逻辑树，计算顶事件的发生概率
+
+
+## ISO 21448：SOTIF（预期功能安全）
+
+传统功能安全假设"功能正确即安全"。但 AI 感知存在性能局限（如雾天摄像头失效、LiDAR 遇到反光路面），这不是"故障"而是"预期功能的局限"，ISO 21448 补充了这一空白。
+
+**SOTIF 四象限场景分类：**
+
+```
+              已知（Known）    未知（Unknown）
+安全（Safe）  ┌──────────────┬──────────────┐
+              │   K₁：已知   │   U₁：未知   │
+              │   安全场景   │   安全场景   │ ← 可接受（概率低）
+              │ （目标：最大化）│              │
+不安全（Unsafe├──────────────┼──────────────┤
+              │   K₂：已知   │   U₂：未知   │
+              │  不安全场景   │  不安全场景   │ ← 目标：最小化
+              │ （通过设计消除）│              │
+              └──────────────┴──────────────┘
+```
+
+验证目标：将 U₂ 场景充分暴露（使其转变为 K₂），再通过系统设计消除 K₂。仿真平台是暴露 U₂ 场景的关键手段。
+
+
+## 冗余设计原则
+
+自动驾驶采用多层次冗余，确保任何单点失效不导致系统级危害：
+
+### 传感器冗余
+- 多种传感器（LiDAR + Camera + Radar）互相备份，任一失效系统仍可感知
+- 同类型多个传感器（前向双摄、多角度毫米波雷达）提供一致性校验，检测单传感器异常
+
+### 计算冗余
+- **双主控 SoC**（如 Tesla FSD HW3 双 NPU）：主计算失效，备份立即接管
+- **Lockstep MCU**：双核同步执行并实时比较输出，检测计算错误，适用于 ASIL-D 功能
+
+### 通信冗余
+- 双 CAN 总线 / 双车载以太网链路
+- 关键控制信号多路传输，防止单线故障
+
+### 电源冗余
+- 主 12 V 电池 + 独立后备超级电容/蓄电池
+- 制动系统配备独立 48 V 或双 12 V 供电回路，确保 ASIL-D 制动功能不受主电源影响
+
+
+## Fail-Safe vs Fail-Operational
+
+| 策略 | 描述 | 适用自动驾驶级别 |
+| --- | --- | --- |
+| Fail-Safe | 故障后立即执行**最小风险机动（MRM）**：减速靠边停车 | L2 / L3 |
+| Fail-Degraded | 降级功能运行，限速行驶至安全区域 | L3 / L4 过渡 |
+| Fail-Operational | 故障后完整保留足够功能，自主完成当前任务 | L4 / L5 |
+
+L4 无人驾驶（无驾驶员备份）**必须实现 Fail-Operational**：即便某传感器或计算单元失效，系统仍能安全地完成最小风险机动，将车辆停至安全位置。
+
+
+## RSS 责任敏感安全模型
+
+Mobileye 提出的 RSS（Responsibility-Sensitive Safety）提供了数学化的安全距离定义，使自动驾驶系统在可归责事故中不承担责任。
+
+**纵向安全距离公式：**
+
+$$d_{\min,\text{lon}} = \left[ v_r \rho + \frac{v_r^2}{2 a_{r,\text{brake,min}}} - \frac{v_f^2}{2 a_{f,\text{brake,max}}} \right]^+$$
+
+其中：
+- $v_r, v_f$：后车和前车速度
+- $\rho$：反应时间（通常取 1–2 s）
+- $a_{r,\text{brake,min}}$：后车最弱制动能力（保守估计）
+- $a_{f,\text{brake,max}}$：前车最强制动能力（保守估计）
+- $[\cdot]^+$：取正值
+
+如果当前车间距 $d > d_{\min}$，自车在任何后续碰撞中不承担责任。
+
+**RSS 核心原则：**
+1. 不主动造成危险情景（不切入不安全间距）
+2. 危险出现时必须正确响应（及时制动）
+3. 响应时优先保证其他交通参与者的安全
+
+
+## 汽车网络安全（Cybersecurity）
+
+现代自动驾驶车辆是"四轮移动计算机"，拥有大量无线接口，面临严峻网络攻击风险。ISO/SAE 21434 要求：
+
+**TARA（威胁分析与风险评估）** — 识别主要攻击面：
+
+| 接口 | 攻击向量 | 潜在影响 |
+| --- | --- | --- |
+| V2X/C-V2X | 虚假交通信息注入 | 错误驾驶决策 |
+| OTA 更新 | 恶意固件 | 控制权劫持 |
+| 蓝牙/Wi-Fi | 近场攻击 | 数据窃取 |
+| OBD-II 端口 | CAN 总线注入 | 刹车/转向控制 |
+| 摄像头输入 | 对抗样本贴纸 | 感知失效 |
+
+**纵深防御策略：**
+- 加密通信（TLS 1.3，证书管理）
+- 固件签名验证（防恶意 OTA）
+- 车内入侵检测系统（IDS）
+- 安全启动（Secure Boot）
+
+
+## 安全测试与验证
+
+### 里程验证挑战
+
+RAND Corporation 研究指出：要以 95% 置信度证明自动驾驶故障率优于人类驾驶员，需行驶约 **275 亿英里**——在物理上不可行（以 100 辆车每天行驶 500 英里计算，需要约 1500 年）。
+
+### 多维度验证策略
+
+| 方法 | 说明 | 优势 |
+| --- | --- | --- |
+| 仿真验证 | 虚拟环境中并行执行等效测试（Waymo 每年仿真 > 100 亿英里） | 规模化、可重复、安全 |
+| 场景化测试 | 系统化场景库，覆盖正常/边角/对抗场景 | 针对性强 |
+| 形式化验证 | 数学证明关键算法的安全属性（如 RSS 模型） | 严格保证 |
+| 影子模式 | 系统在实车上"看"人类驾驶，记录若自主决策会如何 | 低风险大规模数据收集 |
+| 实车路测 | 在真实道路验证，记录脱离（Disengagement）事件 | 最接近实际，必不可少 |
+
 
 ## 参考资料
 
-1. A. Bhat, S. Aoki and R. Rajkumar. Tools and Methodologies for Autonomous Driving Systems. Proceedings of the IEEE. 2018
+1. ISO. ISO 26262: Road Vehicles — Functional Safety, 2nd ed., 2018.
+2. ISO. ISO 21448: Road Vehicles — Safety of the Intended Functionality (SOTIF), 2019.
+3. S. Shalev-Shwartz, S. Shammah, A. Shashua. On a Formal Model of Safe and Scalable Self-driving Cars. arXiv:1708.06374, 2017.
+4. RAND Corporation. Autonomous Vehicle Technology: A Guide for Policymakers, 2020.
+5. A. Bhat, S. Aoki, R. Rajkumar. Tools and Methodologies for Autonomous Driving Systems. Proceedings of the IEEE, 2018.

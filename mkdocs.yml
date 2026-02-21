@@ -20,12 +20,17 @@ nav:
     - intro/main.md
     - intro/define.md
     - intro/category.md
+    - intro/history.md
   - '2. 系统':
     - system/main.md
     - system/vehicle.md
     - system/v2x.md
     - system/platform.md
+    - system/hdmap.md
+    - system/hmi.md
     - system/safety.md
+    - system/testing.md
+    - system/cybersecurity.md
     - system/regulation.md
   - '3. 硬件':
     - hardware/main.md
@@ -40,13 +45,23 @@ nav:
     - algorithm/sw_overview.md
     - algorithm/image_processing.md
     - algorithm/laser_processing.md
+    - algorithm/sensor_fusion.md
+    - algorithm/occupancy.md
     - algorithm/localisation.md
     - algorithm/path_planning.md
+    - algorithm/prediction.md
     - algorithm/decision_making.md
+    - algorithm/control.md
+    - algorithm/end_to_end.md
+    - algorithm/data_pipeline.md
     - algorithm/nlp.md
   - '5. 实例':
     - casestudy/main.md
     - casestudy/apollo.md
+    - casestudy/waymo.md
+    - casestudy/tesla.md
+    - casestudy/chinese_players.md
+    - casestudy/robotaxi.md
 
 
 # Theme
