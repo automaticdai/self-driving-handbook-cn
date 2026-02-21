@@ -21,12 +21,20 @@ nav:
     - intro/define.md
     - intro/category.md
     - intro/history.md
+    - intro/glossary.md
   - '2. 系统':
     - system/main.md
+    - system/architecture.md
     - system/vehicle.md
-    - system/v2x.md
+    - '车联网 V2X':
+      - system/v2x.md
+      - system/v2x_comm_rsu.md
+      - system/v2x_security_operations.md
     - system/platform.md
-    - system/hdmap.md
+    - '高精地图':
+      - system/hdmap.md
+      - system/hdmap_data_lifecycle.md
+      - system/hdmap_localization_lightweight.md
     - system/hmi.md
     - system/safety.md
     - system/testing.md
@@ -35,33 +43,71 @@ nav:
   - '3. 硬件':
     - hardware/main.md
     - hardware/hw_overview.md
-    - hardware/ccu.md
-    - hardware/drive_by_wire.md
-    - hardware/communication.md
-    - hardware/sensors.md
-    - hardware/camera.md
+    - '计算平台 CCU':
+      - hardware/ccu.md
+      - hardware/ccu_soc_selection.md
+      - hardware/ccu_arch_safety.md
+    - '线控系统':
+      - hardware/drive_by_wire.md
+      - hardware/drive_by_wire_actuation.md
+      - hardware/drive_by_wire_safety_validation.md
+    - '车载通信':
+      - hardware/communication.md
+      - hardware/communication_network_protocols.md
+      - hardware/communication_security_ota.md
+    - '感知传感器':
+      - hardware/sensors.md
+      - hardware/sensors_active.md
+      - hardware/sensors_vision_positioning.md
+    - '摄像头':
+      - hardware/camera.md
+      - hardware/camera_imaging_calibration.md
+      - hardware/camera_sync_reliability.md
   - '4. 算法':
     - algorithm/main.md
-    - algorithm/sw_overview.md
+    - '软件框架':
+      - algorithm/sw_overview.md
+      - algorithm/sw_overview_arch_timing.md
+      - algorithm/sw_overview_middleware_deployment.md
     - algorithm/image_processing.md
     - algorithm/laser_processing.md
     - algorithm/sensor_fusion.md
     - algorithm/occupancy.md
-    - algorithm/localisation.md
-    - algorithm/path_planning.md
+    - '定位':
+      - algorithm/localisation.md
+      - algorithm/localisation_slam_fusion.md
+      - algorithm/localisation_metrics_ops.md
+    - '路径规划':
+      - algorithm/path_planning.md
+      - algorithm/path_planning_global_behavior.md
+      - algorithm/path_planning_local_trajectory.md
     - algorithm/prediction.md
     - algorithm/decision_making.md
-    - algorithm/control.md
-    - algorithm/end_to_end.md
+    - '车辆控制':
+      - algorithm/control.md
+      - algorithm/control_lateral.md
+      - algorithm/control_longitudinal.md
+    - algorithm/metrics_validation.md
+    - '端到端':
+      - algorithm/end_to_end.md
+      - algorithm/end_to_end_data_training.md
+      - algorithm/end_to_end_safety_deployment.md
     - algorithm/data_pipeline.md
     - algorithm/nlp.md
   - '5. 实例':
     - casestudy/main.md
-    - casestudy/apollo.md
+    - 'Apollo 案例':
+      - casestudy/apollo.md
+      - casestudy/apollo_tech_stack.md
+      - casestudy/apollo_operations.md
     - casestudy/waymo.md
     - casestudy/tesla.md
     - casestudy/chinese_players.md
     - casestudy/robotaxi.md
+  - '6. 参与贡献':
+    - how-to-contribute.md
+    - standard.md
+    - contributors.md
 
 
 # Theme
@@ -92,7 +138,8 @@ markdown_extensions:
   - extra
   - tables
   - fenced_code
-  - pymdownx.arithmatex
+  - pymdownx.arithmatex:
+      generic: true
   - pymdownx.superfences:
       custom_fences:
         - name: math
