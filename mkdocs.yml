@@ -41,6 +41,7 @@ nav:
     - algorithm/sw_overview.md
     - algorithm/image_processing.md
     - algorithm/laser_processing.md
+    - algorithm/sensor_fusion.md
     - algorithm/localisation.md
     - algorithm/path_planning.md
     - algorithm/prediction.md
