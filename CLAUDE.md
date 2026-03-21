@@ -36,7 +36,9 @@ This is a pure documentation project — no application code, tests, or linting.
 - `system/` — Section 2: Vehicle systems, V2X, platforms, safety, regulations
 - `hardware/` — Section 3: CCU, drive-by-wire, sensors, cameras
 - `algorithm/` — Section 4: Image/laser processing, localization, path planning, decision making, NLP
-- `casestudy/` — Section 5: Real-world examples (Apollo)
+- `simulation/` — Section 5: Simulation and testing
+- `vlm/` — Section 6: Vision-language models
+- `casestudy/` — Section 7: Real-world examples (Apollo, Waymo, Tesla)
 
 **Navigation** is defined explicitly in `mkdocs.yml` under the `nav` key. Adding a new page requires updating both the markdown file and the nav config.
 
