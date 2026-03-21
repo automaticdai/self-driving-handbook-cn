@@ -1,0 +1,449 @@
+# 仿真评估指标
+
+自动驾驶仿真系统的核心价值在于能够系统性地评估算法性能。本章介绍仿真环境中常用的评估指标体系，涵盖安全性、舒适性、效率性、覆盖性、合规性和感知性能等多个维度，并讨论基准测试方法与统计显著性分析。
+
+---
+
+## 1. 安全性指标
+
+安全性是自动驾驶系统最核心的评估维度。仿真环境允许我们在不产生真实风险的前提下，量化系统在各类危险场景中的表现。
+
+### 1.1 碰撞率（Collision Rate）
+
+碰撞率定义为在所有仿真场景中发生碰撞的比例：
+
+$$
+R_{\text{collision}} = \frac{N_{\text{collision}}}{N_{\text{total}}} \times 100\%
+$$
+
+其中 $N_{\text{collision}}$ 为发生碰撞的场景数量，$N_{\text{total}}$ 为仿真场景总数。碰撞率是最基础也是最直观的安全指标，但它只反映了最终结果，无法衡量"接近危险"的程度。
+
+### 1.2 碰撞时间（TTC, Time-to-Collision）
+
+TTC 衡量在当前运动状态下，两个交通参与者发生碰撞所需的时间：
+
+$$
+TTC = \frac{d}{v_{\text{ego}} - v_{\text{lead}}}
+$$
+
+其中 $d$ 为两车距离，$v_{\text{ego}}$ 为自车速度，$v_{\text{lead}}$ 为前车速度（仅当 $v_{\text{ego}} > v_{\text{lead}}$ 时有意义）。常用安全阈值：
+
+| 风险等级 | TTC 范围 |
+|---------|----------|
+| 高危 | $TTC < 1.5\,\text{s}$ |
+| 警告 | $1.5\,\text{s} \leq TTC < 3.0\,\text{s}$ |
+| 安全 | $TTC \geq 3.0\,\text{s}$ |
+
+在仿真中，通常统计 $TTC_{\min}$ 的分布以及 $TTC < \tau$ 的时间占比。
+
+### 1.3 后侵入时间（PET, Post-Encroachment Time）
+
+PET 用于评估交叉路口等场景中两个交通参与者依次通过同一冲突区域的时间差：
+
+$$
+PET = t_2^{\text{arrive}} - t_1^{\text{leave}}
+$$
+
+其中 $t_1^{\text{leave}}$ 为第一个参与者离开冲突区域的时刻，$t_2^{\text{arrive}}$ 为第二个参与者到达冲突区域的时刻。PET 越小，表示冲突风险越高。通常 $PET < 1.5\,\text{s}$ 被视为严重冲突。
+
+### 1.4 最小安全距离违规
+
+最小安全距离指标检测自车与周围物体之间的距离是否低于安全阈值。安全距离由反应距离和制动距离共同决定：
+
+$$
+D_{\text{safe}} = v_{\text{ego}} \cdot t_{\text{reaction}} + \frac{v_{\text{ego}}^2 - v_{\text{lead}}^2}{2a_{\max}}
+$$
+
+违规率定义为实际跟车距离小于 $D_{\text{safe}}$ 的时间步占比。
+
+### 1.5 避撞减速度（DRAC, Deceleration Rate to Avoid Crash）
+
+DRAC 计算为避免碰撞所需的最小减速度：
+
+$$
+DRAC = \frac{(v_{\text{ego}} - v_{\text{lead}})^2}{2d}
+$$
+
+当 $DRAC$ 超过物理可实现的最大减速度（$8\sim10\,\text{m/s}^2$）时，认为碰撞不可避免。
+
+### 1.6 责任敏感安全模型（RSS）
+
+RSS（Responsibility-Sensitive Safety）由 Mobileye 提出，为自动驾驶行为定义了形式化的安全包络，包括纵向安全距离、横向安全距离和路权判定三个核心规则。在仿真中，RSS 合规率定义为：
+
+$$
+R_{\text{RSS}} = \frac{T_{\text{compliant}}}{T_{\text{total}}} \times 100\%
+$$
+
+其中 $T_{\text{compliant}}$ 为满足 RSS 安全条件的时间步数，$T_{\text{total}}$ 为总时间步数。
+
+---
+
+## 2. 舒适性指标
+
+舒适性直接影响乘客体验。仿真中的舒适性评估主要关注加速度和加加速度（jerk）的大小与变化。
+
+### 2.1 纵向加加速度（Longitudinal Jerk）
+
+纵向 jerk 是加速度的时间导数，反映加速度变化的剧烈程度。在离散仿真中：
+
+$$
+j_{\text{lon}}(k) = \frac{a_{\text{lon}}(k) - a_{\text{lon}}(k-1)}{\Delta t}
+$$
+
+通常的舒适性阈值为 $|j_{\text{lon}}| < 2.0\,\text{m/s}^3$。
+
+### 2.2 横向加速度（Lateral Acceleration）
+
+横向加速度反映车辆转弯时的离心力大小：
+
+$$
+a_{\text{lat}} = \frac{v^2}{R}
+$$
+
+其中 $v$ 为车速，$R$ 为转弯半径。舒适性要求：
+
+| 场景 | 横向加速度限值 |
+|------|--------------|
+| 城市道路 | $|a_{\text{lat}}| < 2.0\,\text{m/s}^2$ |
+| 高速公路 | $|a_{\text{lat}}| < 1.5\,\text{m/s}^2$ |
+| 特殊人群（老人、儿童） | $|a_{\text{lat}}| < 1.0\,\text{m/s}^2$ |
+
+### 2.3 舒适性综合评分
+
+综合考虑多维度的舒适性指标，定义加权评分公式：
+
+$$
+S_{\text{comfort}} = w_1 \cdot f(j_{\text{lon}}) + w_2 \cdot f(a_{\text{lat}}) + w_3 \cdot f(j_{\text{lat}}) + w_4 \cdot f(a_{\text{lon}})
+$$
+
+其中 $f(\cdot)$ 为归一化函数（映射到 $[0, 1]$），$w_i$ 为权重系数且 $\sum w_i = 1$。常用归一化方法：
+
+$$
+f(x) = \max\left(0,\; 1 - \frac{|x|}{x_{\text{threshold}}}\right)
+$$
+
+### 2.4 ISO 2631 乘坐舒适性标准
+
+ISO 2631 标准使用频率加权加速度均方根值来评估振动舒适性：
+
+$$
+a_w = \sqrt{\frac{1}{T}\int_0^T a_w^2(t)\,dt}
+$$
+
+该标准定义的舒适性等级如下：
+
+| 加权加速度 $a_w$（m/s$^2$） | 舒适性等级 |
+|----------------------------|-----------|
+| $< 0.315$ | 无不适 |
+| $0.315 \sim 0.63$ | 轻微不适 |
+| $0.8 \sim 1.6$ | 不适 |
+| $> 2.0$ | 极度不适 |
+
+在仿真中，可对规划输出的加速度信号按 ISO 2631 的频率加权曲线计算 $a_w$，获得标准化舒适性评级。
+
+---
+
+## 3. 效率性指标
+
+效率性指标衡量自动驾驶系统完成驾驶任务的效率。
+
+### 3.1 行程时间比（Travel Time Ratio）
+
+行程时间比将实际行程时间与理想行程时间进行比较：
+
+$$
+\eta_{\text{time}} = \frac{T_{\text{ideal}}}{T_{\text{actual}}}
+$$
+
+其中 $T_{\text{ideal}}$ 为在遵守交通规则前提下的最优行程时间，$T_{\text{actual}}$ 为实际行程时间。$\eta_{\text{time}}$ 越接近 1 表示效率越高。
+
+### 3.2 任务成功率（Task Success Rate）
+
+任务成功率定义为成功完成预定驾驶任务的场景比例：
+
+$$
+R_{\text{success}} = \frac{N_{\text{success}}}{N_{\text{total}}} \times 100\%
+$$
+
+"成功"通常要求：到达目标位置、无碰撞、未违规、未超时。
+
+### 3.3 平均速度与速度利用率
+
+速度利用率衡量实际平均速度 $\bar{v} = \frac{1}{T}\int_0^T v(t)\,dt$ 与道路限速的比值：
+
+$$
+\eta_v = \frac{\bar{v}}{v_{\text{limit}}}
+$$
+
+### 3.4 不必要停车次数
+
+统计系统在无需停车的场景中发生的停车事件数量，反映决策模块的保守程度。过于保守的系统虽然安全指标较高，但实际可用性较差。
+
+### 3.5 燃油/能源效率
+
+通过车辆动力学模型估算能耗 $E = \int_0^T F_{\text{traction}}(t) \cdot v(t)\,dt$，常用单位距离能耗 $E/d$（kWh/km 或 L/100km）评估。
+
+---
+
+## 4. 覆盖性指标
+
+覆盖性指标衡量仿真测试对目标空间的探索程度，是评估测试充分性的关键维度。
+
+### 4.1 运行设计域覆盖（ODD Coverage）
+
+ODD（Operational Design Domain）定义了系统的适用范围。ODD 覆盖率衡量仿真测试对各维度的覆盖程度：
+
+| ODD 维度 | 示例参数 |
+|----------|---------|
+| 道路类型 | 高速公路、城市道路、乡村道路 |
+| 天气条件 | 晴天、雨天、雪天、雾天 |
+| 光照条件 | 白天、黄昏、夜间 |
+| 交通密度 | 稀疏、中等、拥堵 |
+| 道路几何 | 直道、弯道、坡道、交叉路口 |
+
+### 4.2 场景覆盖率（Scenario Coverage）
+
+场景覆盖率衡量预定义场景库中已被测试的比例：
+
+$$
+C_{\text{scenario}} = \frac{|S_{\text{tested}}|}{|S_{\text{total}}|} \times 100\%
+$$
+
+### 4.3 代码覆盖率与 MC/DC
+
+代码覆盖率衡量仿真过程中被执行的代码比例。在安全关键系统中，常使用 MC/DC（Modified Condition/Decision Coverage）：
+
+- **判定覆盖**：每个判定的真值和假值至少被执行一次
+- **条件覆盖**：每个条件的真值和假值至少被执行一次
+- **MC/DC**：每个条件独立地影响判定结果至少一次
+
+MC/DC 是 DO-178C 标准最高安全等级（Level A）的要求，也逐渐被自动驾驶行业采纳。
+
+### 4.4 参数空间覆盖率
+
+参数空间覆盖率衡量测试点在参数空间中的分布均匀性，常用差异度（Discrepancy）度量：
+
+$$
+D_N = \sup_{B \in \mathcal{B}} \left| \frac{|P \cap B|}{N} - \lambda(B) \right|
+$$
+
+其中 $P$ 为测试点集合，$N$ 为测试点总数，$B$ 为参数空间中的矩形区域，$\lambda(B)$ 为其体积比。
+
+### 4.5 N-wise 组合覆盖
+
+N-wise 组合覆盖是一种系统化的测试设计方法，确保任意 $N$ 个参数的所有取值组合至少被测试一次：
+
+- **1-wise（每值覆盖）**：每个参数的每个取值至少出现一次
+- **2-wise（成对覆盖）**：任意两个参数的所有取值对至少出现一次
+- **3-wise（三元组覆盖）**：任意三个参数的所有取值组合至少出现一次
+
+研究表明约 90% 的缺陷由两个参数的交互触发，因此 2-wise 或 3-wise 覆盖在实践中通常足够。
+
+---
+
+## 5. 合规性指标
+
+合规性指标衡量自动驾驶系统是否遵守交通法规。
+
+### 5.1 交通违规检测
+
+仿真系统可自动检测的违规类型：
+
+| 违规类型 | 检测方法 | 严重程度 |
+|---------|---------|---------|
+| 闯红灯 | 通过停车线时检查信号灯状态 | 严重 |
+| 超速 | 比较实际速度与道路限速 | 中等～严重 |
+| 违规变道 | 检查实线区域的换道行为 | 中等 |
+| 逆向行驶 | 检查行驶方向与车道方向一致性 | 严重 |
+| 未让行 | 让行标志处检查减速让行 | 中等 |
+
+### 5.2 限速合规率
+
+限速合规率定义为车辆速度不超过当前道路限速的时间占比：
+
+$$
+R_{\text{speed}} = \frac{T_{v \leq v_{\text{limit}}}}{T_{\text{total}}} \times 100\%
+$$
+
+### 5.3 信号灯合规率
+
+信号灯合规率统计正确响应交通信号灯的比例，包括红灯停车、黄灯合理减速和绿灯正常通行。
+
+### 5.4 车道纪律性
+
+车道纪律性指标评估车辆在车道内的横向偏移情况：
+
+$$
+\sigma_{\text{lateral}} = \sqrt{\frac{1}{T}\int_0^T \left[y(t) - y_{\text{center}}(t)\right]^2 dt}
+$$
+
+$\sigma_{\text{lateral}}$ 越小表示车道保持能力越好。同时还需统计压线次数和出车道次数。
+
+---
+
+## 6. 感知性能指标
+
+仿真环境可提供精确的真值（Ground Truth），从而准确评估感知性能。
+
+### 6.1 平均精度均值（mAP）
+
+对每个目标类别 $c$，计算精确率-召回率曲线下的面积 $AP_c$：
+
+$$
+AP_c = \int_0^1 P_c(R)\,dR
+$$
+
+然后对所有类别取平均：
+
+$$
+mAP = \frac{1}{|C|}\sum_{c \in C} AP_c
+$$
+
+仿真中常按距离分段计算 mAP（如 0-30m、30-50m、50-80m），分析不同距离上的性能衰减。
+
+### 6.2 交并比（IoU）
+
+IoU 衡量检测框与真值框的重叠程度：
+
+$$
+IoU = \frac{|B_{\text{pred}} \cap B_{\text{gt}}|}{|B_{\text{pred}} \cup B_{\text{gt}}|}
+$$
+
+常用的 IoU 阈值为 0.5（宽松）和 0.7（严格）。
+
+### 6.3 误检率与漏检率
+
+$$
+FPR = \frac{FP}{FP + TN}, \quad FNR = \frac{FN}{FN + TP}
+$$
+
+- **误检（False Positive）**：将不存在的物体检测为存在，导致不必要的刹车
+- **漏检（False Negative）**：未能检测到真实物体，可能导致碰撞
+
+在安全关键场景中，漏检通常比误检更为严重，应重点关注近距离目标和弱势道路使用者的漏检率。
+
+---
+
+## 7. 评估指标体系总结表
+
+下表汇总了各维度的核心评估指标：
+
+| 维度 | 指标名称 | 单位/范围 | 理想方向 | 优先级 |
+|------|---------|----------|---------|-------|
+| 安全性 | 碰撞率 | % | 越低越好 | 极高 |
+| 安全性 | TTC 最小值 | s | 越高越好 | 极高 |
+| 安全性 | RSS 合规率 | % | 越高越好 | 高 |
+| 安全性 | DRAC 最大值 | m/s$^2$ | 越低越好 | 高 |
+| 舒适性 | 纵向 jerk 均方根 | m/s$^3$ | 越低越好 | 中 |
+| 舒适性 | 横向加速度峰值 | m/s$^2$ | 越低越好 | 中 |
+| 舒适性 | ISO 2631 加权加速度 | m/s$^2$ | 越低越好 | 中 |
+| 效率性 | 行程时间比 | 0~1 | 越高越好 | 中 |
+| 效率性 | 任务成功率 | % | 越高越好 | 高 |
+| 效率性 | 不必要停车次数 | 次 | 越少越好 | 中 |
+| 覆盖性 | 场景覆盖率 | % | 越高越好 | 高 |
+| 覆盖性 | MC/DC 覆盖率 | % | 越高越好 | 高 |
+| 合规性 | 交通违规次数 | 次 | 越少越好 | 高 |
+| 合规性 | 车道偏移标准差 | m | 越小越好 | 中 |
+| 感知 | mAP | 0~1 | 越高越好 | 高 |
+| 感知 | 漏检率 | % | 越低越好 | 极高 |
+
+---
+
+## 8. 基准测试（Benchmarking）
+
+基准测试为不同系统提供统一的评估平台和可比较的性能参照。
+
+### 8.1 CARLA Leaderboard
+
+CARLA Leaderboard 是最具影响力的端到端自动驾驶基准测试之一，核心指标包括：
+
+- **驾驶得分（Driving Score）**：路线完成度与违规惩罚的乘积
+
+$$
+DS = R_c \cdot \prod_{i} p_i^{n_i}
+$$
+
+其中 $R_c$ 为路线完成率，$p_i$ 为第 $i$ 类违规的惩罚系数，$n_i$ 为该类违规的发生次数。
+
+- **路线完成率（Route Completion）**：成功行驶距离占总路线长度的比例
+
+### 8.2 nuScenes 规划基准
+
+nuScenes 规划基准的评估指标包括 L2 轨迹误差、碰撞率和沿路径进度：
+
+$$
+L2_t = \frac{1}{N}\sum_{i=1}^{N}\sqrt{(x_i^{\text{pred}}(t) - x_i^{\text{gt}}(t))^2 + (y_i^{\text{pred}}(t) - y_i^{\text{gt}}(t))^2}
+$$
+
+通常在 1s、2s、3s 三个时间范围内分别报告 L2 误差。
+
+### 8.3 跨平台比较方法论
+
+不同仿真平台的评估结果不能直接对比，需注意：
+
+1. **场景对齐**：确保测试场景在不同平台上具有等价的语义内容
+2. **传感器配置统一**：保持传感器参数一致
+3. **物理引擎差异**：不同仿真器的动力学模型精度不同
+4. **环境渲染差异**：渲染质量差异可能影响感知表现
+5. **标准化评估协议**：采用统一的评估脚本和指标计算方法
+
+---
+
+## 9. 统计显著性与置信度
+
+### 9.1 所需场景数量估算
+
+对于碰撞率等二值指标，所需最小场景数量可由置信区间推导：
+
+$$
+N \geq \frac{z_{\alpha/2}^2 \cdot p(1-p)}{\epsilon^2}
+$$
+
+其中 $z_{\alpha/2}$ 为标准正态分布的临界值（95% 置信度下为 1.96），$p$ 为预期的碰撞率，$\epsilon$ 为可接受的误差范围。
+
+例如验证 $10^{-6}$ 的碰撞率需约 $3 \times 10^6$ 次仿真，这正是仿真测试不可替代的价值所在。
+
+### 9.2 蒙特卡洛方法
+
+蒙特卡洛方法通过随机采样估计指标的统计特性：
+
+$$
+\hat{\theta} = \frac{1}{N}\sum_{i=1}^{N} g(X_i)
+$$
+
+其中 $X_i$ 为第 $i$ 次仿真的随机场景参数，$g(\cdot)$ 为指标计算函数。根据中心极限定理，估计误差以 $O(1/\sqrt{N})$ 的速率收敛。
+
+蒙特卡洛方法实现简单但收敛较慢，对于稀有事件可能需要极大量仿真才能获得有效样本。
+
+### 9.3 重要性采样（Importance Sampling）
+
+重要性采样用提议分布 $q(x)$ 替代原始分布 $p(x)$，提高稀有事件的采样效率：
+
+$$
+\hat{\theta}_{IS} = \frac{1}{N}\sum_{i=1}^{N} g(X_i) \cdot \frac{p(X_i)}{q(X_i)}, \quad X_i \sim q(x)
+$$
+
+其中 $\frac{p(X_i)}{q(X_i)}$ 为重要性权重。典型应用包括对抗性场景生成、极端天气条件增强和稀有交通事件采样。通过合理设计 $q(x)$，可将所需仿真次数从 $10^6$ 降低到 $10^3$ 量级。
+
+### 9.4 置信度评估框架
+
+建议采用以下分阶段评估框架：
+
+1. **初步探索**：蒙特卡洛大规模随机测试，识别基本性能范围
+2. **定向测试**：针对薄弱场景进行参数化扫描
+3. **稀有事件评估**：重要性采样评估极端场景安全性
+4. **统计汇总**：计算置信区间 $CI_{1-\alpha} = \left[\hat{\theta} - z_{\alpha/2}\frac{s}{\sqrt{N}},\; \hat{\theta} + z_{\alpha/2}\frac{s}{\sqrt{N}}\right]$，确认统计显著性
+
+---
+
+## 参考资料
+
+1. Shalev-Shwartz S, Shammah S, Shashua A. On a formal model of safe and scalable self-driving cars[J]. arXiv preprint arXiv:1708.06374, 2017. (RSS 模型)
+2. ISO 2631-1:1997. Mechanical vibration and shock — Evaluation of human exposure to whole-body vibration.
+3. Riedmaier S, Ponn T, Ludwig D, et al. Survey on scenario-based safety assessment of automated vehicles[J]. IEEE Access, 2020, 8: 87456-87477.
+4. Zhao D, Lam H, Peng H, et al. Accelerated evaluation of automated vehicles safety in lane-change scenarios based on importance sampling techniques[J]. IEEE Transactions on Intelligent Transportation Systems, 2017, 18(3): 595-607.
+5. CARLA Leaderboard. https://leaderboard.carla.org/
+6. nuScenes Dataset. https://www.nuscenes.org/
+7. Kuhn M, Johnson K. Applied Predictive Modeling[M]. Springer, 2013. (N-wise 组合覆盖)
+8. Ammann P, Offutt J. Introduction to Software Testing[M]. Cambridge University Press, 2016. (MC/DC 覆盖)
+9. Feng S, Yan X, Sun H, et al. Intelligent driving intelligence test for autonomous vehicles: A suites of evaluation metrics[J]. IEEE Intelligent Transportation Systems Magazine, 2021.

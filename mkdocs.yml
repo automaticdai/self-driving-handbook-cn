@@ -99,8 +99,22 @@ nav:
     - algorithm/nlp.md
   - '5. 仿真测试':
     - simulation/main.md
+    - simulation/platforms.md
+    - simulation/environment.md
+    - simulation/sensors.md
+    - simulation/scenarios.md
+    - simulation/methodology.md
+    - simulation/metrics.md
+    - simulation/sim2real.md
   - '6. 视觉语言大模型':
     - vlm/main.md
+    - vlm/foundation.md
+    - vlm/scene_understanding.md
+    - vlm/decision_planning.md
+    - vlm/data_annotation.md
+    - vlm/hmi.md
+    - vlm/deployment.md
+    - vlm/outlook.md
   - '7. 实例':
     - casestudy/main.md
     - 'Apollo 案例':
@@ -130,6 +144,11 @@ theme:
   font:
     text: 'Fira Sans'
     code: 'Fira Mono'
+
+extra:
+  analytics:
+    provider: google
+    property: G-N0PZM76K4V
 
 # Extra
 extra_javascript:
