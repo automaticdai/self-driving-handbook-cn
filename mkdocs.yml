@@ -39,6 +39,7 @@ nav:
     - system/hmi.md
     - system/safety.md
     - system/testing.md
+    - system/incidents.md
     - system/cybersecurity.md
     - system/regulation.md
   - '3. 硬件':
