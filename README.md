@@ -4,7 +4,7 @@
 
 本手册系统介绍自动驾驶技术的历史、现状与发展趋势，覆盖从基础概念到核心算法、从硬件系统到工程落地的完整知识体系。
 
-![Image result for google autonomous car](docs/google_av.png)
+![Image result for google autonomous car](docs/_static/img/google_av.png)
 
 **在线阅读：** <https://yfrobotics.github.io/self-driving-handbook-cn>
 

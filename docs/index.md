@@ -4,7 +4,7 @@
 
 本指南由 云飞机器人实验室 ( [知乎](https://www.zhihu.com/column/yfworld) | [B站](https://space.bilibili.com/493264461) | [博客](https://yfrobotics.github.io/) | [YouTube](https://www.youtube.com/@yfrobotics) | [Ins](https://www.instagram.com/yfrobotics/) ) 发起，系统介绍自动驾驶技术的历史、现状与发展趋势，覆盖从基础概念到核心算法、从硬件系统到工程落地的完整知识体系。无论你是刚接触自动驾驶的学生，还是希望拓宽技术视野的工程师，都可以在这里找到适合的内容。
 
-![Image result for google autonomous car](google_av.png)
+![Image result for google autonomous car](_static/img/google_av.png)
 
 ---
 

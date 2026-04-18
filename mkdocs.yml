@@ -96,6 +96,7 @@ nav:
       - algorithm/end_to_end_data_training.md
       - algorithm/end_to_end_safety_deployment.md
     - algorithm/data_pipeline.md
+    - algorithm/datasets_benchmarks.md
     - algorithm/nlp.md
   - '5. 仿真测试':
     - simulation/main.md
@@ -150,6 +151,14 @@ extra:
     provider: google
     property: G-N0PZM76K4V
 
+# Plugins
+plugins:
+  - search
+  - git-revision-date-localized:
+      type: date
+      locale: zh
+      fallback_to_build_date: true
+
 # Extra
 extra_javascript:
   - 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
@@ -164,6 +173,12 @@ markdown_extensions:
   - extra
   - tables
   - fenced_code
+  - abbr
+  - pymdownx.snippets:
+      auto_append:
+        - includes/abbreviations.md
+      base_path:
+        - .
   - pymdownx.arithmatex:
       generic: true
   - pymdownx.superfences:
