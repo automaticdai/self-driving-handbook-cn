@@ -181,3 +181,79 @@
 | **MPKD** | Miles Per Kilometre Disengagement / 每千公里干预次数 |
 | **NPS** | Net Promoter Score，净推荐值（用户满意度指标）|
 | **Geofencing** | 地理围栏，限定自动驾驶运营区域的虚拟边界 |
+
+---
+
+## 11. 端到端与大模型
+
+| 术语 | 全称 | 简要说明 |
+| --- | --- | --- |
+| **E2E** | End-to-End | 端到端驾驶，从传感器原始输入直接输出轨迹或控制指令 |
+| **Modular E2E** | — | 模块化端到端：保留感知/预测/规划子网络，但联合训练 |
+| **One-Model E2E** | — | 单模型端到端：一个大网络直接产出轨迹，无显式中间表示 |
+| **Occupancy Network** | — | 占据网络，预测三维空间每个体素的占据概率与语义（Tesla/华为）|
+| **World Model** | — | 世界模型，学习环境动态并在潜空间中推演未来（GAIA、DriveDreamer）|
+| **VLM** | Vision-Language Model | 视觉语言模型，联合理解图像与文本（用于场景解释、决策）|
+| **VLA** | Vision-Language-Action | 视觉-语言-动作模型，输出可执行动作（驾驶控制/机器人）|
+| **LLM** | Large Language Model | 大语言模型，驱动推理与自然语言交互 |
+| **MoE** | Mixture of Experts | 专家混合，稀疏激活以降低推理成本 |
+| **CoT** | Chain of Thought | 思维链，显式输出中间推理步骤 |
+| **RAG** | Retrieval-Augmented Generation | 检索增强生成，借外部知识库补足模型参数 |
+| **SFT** | Supervised Fine-Tuning | 监督微调 |
+| **RLHF** | Reinforcement Learning from Human Feedback | 基于人类反馈的强化学习 |
+| **Diffusion Policy** | — | 扩散策略，用扩散模型采样多模态轨迹 |
+| **Imitation Learning** | — | 模仿学习，从专家轨迹学习驾驶策略 |
+| **Token** | — | 大模型处理的最小语义单元（文字/图像 patch）|
+
+---
+
+## 12. 数据与训练
+
+| 术语 | 含义 |
+| --- | --- |
+| **Data Pipeline** | 数据闭环：采集 → 脱敏 → 标注 → 训练 → 评测 → 回灌 |
+| **Auto-Labeling** | 自动标注，用大模型/离线高精算法生成训练标签 |
+| **Corner Case** | 长尾场景，低频但高风险的驾驶情况（施工、异形障碍物）|
+| **Shadow Mode** | 影子模式，在量产车后台运行新模型并对比人类驾驶以挖掘 corner case |
+| **Active Learning** | 主动学习，优先标注模型不确定的样本 |
+| **Domain Gap** | 领域差异，训练与部署分布不一致导致的性能下降 |
+| **Data Augmentation** | 数据增广（旋转、遮挡、光照等）|
+| **Scenario Mining** | 场景挖掘，从量产车日志中筛选目标场景 |
+| **HIL Replay / Log Replay** | 日志回灌，把真实采集数据注入仿真或新算法重放评估 |
+| **Ground Truth** | 真值，由高精算法/人工标注得到的参考答案 |
+
+---
+
+## 13. 仿真与评测
+
+| 术语 | 含义 |
+| --- | --- |
+| **Sim-to-Real** | 仿真到实车的迁移问题（sim2real gap）|
+| **Digital Twin** | 数字孪生，对真实物理世界的高保真数字复刻 |
+| **Scenario DSL** | 场景领域特定语言（如 OpenSCENARIO、Scenic）|
+| **OpenSCENARIO** | ASAM 发布的场景描述标准（XML/XOSC）|
+| **OpenDRIVE** | ASAM 发布的道路描述标准（XODR）|
+| **NDS** | Navigation Data Standard，导航地图数据标准 |
+| **CARLA / LGSVL / VTD** | 常见开源/商用自动驾驶仿真器 |
+| **PEM** | Perception Error Model，感知误差模型（在仿真中注入感知噪声）|
+| **Collision Rate** | 碰撞率，安全评测核心指标 |
+| **Route Completion** | 路线完成度，CARLA Leaderboard 常用指标 |
+| **nuScenes / Waymo Open / Argoverse** | 常见感知与预测公开数据集 |
+| **nuPlan / Bench2Drive** | 常见规划与端到端基准 |
+
+---
+
+## 14. 芯片与部署
+
+| 术语 | 含义 |
+| --- | --- |
+| **TOPS** | Tera Operations Per Second，每秒万亿次运算（NPU 算力单位，注意精度）|
+| **INT8 / FP16 / BF16** | 推理常用数值格式；低精度减小带宽与算力开销 |
+| **Quantization** | 量化，将 FP32 权重压缩到 INT8/INT4 |
+| **PTQ / QAT** | 训练后量化 / 量化感知训练 |
+| **Sparsity** | 稀疏化，剪枝零权重以加速推理 |
+| **Knowledge Distillation** | 知识蒸馏，用大模型教小模型 |
+| **TensorRT / OpenVINO / TVM** | 常见推理优化工具链 |
+| **Safety Island** | 安全岛，SoC 内独立的 ASIL-D 监控核（锁步 MCU）|
+| **Hypervisor** | 虚拟化管理程序，实现智驾域/座舱域隔离 |
+| **Zonal Architecture** | 区域控制架构，按位置划分 ECU（取代传统功能域布线）|
