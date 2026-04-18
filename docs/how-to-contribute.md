@@ -1,38 +1,52 @@
 # 如何贡献这个维基？
 
-[项目GitHub地址](https://github.com/yfrobotics/self-driving-handbook-cn)
+[项目 GitHub 地址](https://github.com/yfrobotics/self-driving-handbook-cn)
 
-## 贡献方法
+## 贡献方式
 
-你可以通过以下两种方式贡献这个维基：
+你可以通过以下任意方式参与：
 
-1. 通过提交代码PR：git clone -> make change -> push & pull request
-2. 通过创建issues：[Create a new issue](https://github.com/yfrobotics/self-driving-handbook-cn/issues)
+- **提交 Pull Request**：fork → clone → 修改 → push → 发起 PR
+- **提交 Issue**：对内容、结构、错别字等任何问题[创建 issue](https://github.com/yfrobotics/self-driving-handbook-cn/issues)
 
+在动手前，建议先阅读[书写规范](standard.md)，新增条目时请同步更新 `mkdocs.yml` 的 `nav` 配置。
 
-## 环境配置与运行
+## 本地开发
+
+推荐使用 Python 虚拟环境，避免与系统环境冲突：
 
 ```bash
-# 安装依赖
-> sudo python3 -m pip install -r "requirements.txt"
+# 1. 创建并激活虚拟环境
+python3 -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 
-# 确认mkdocs安装成功并显示版本
-> mkdocs --version
+# 2. 安装依赖
+pip install -r requirements.txt
 
-# 运行mkdocs
-> mkdocs serve
+# 3. 启动本地预览（默认 http://127.0.0.1:8000）
+mkdocs serve
+
+# 4. 严格构建（与 CI 一致，会在有警告时报错）
+mkdocs build --strict
 ```
 
-运行成功之后，打开浏览器，访问：`localhost:8000`
+构建产物位于 `site/` 目录，已加入 `.gitignore`。
 
+## 新增页面
 
-## 开发细节
-
-- [Materials for Mkdocs文档](https://squidfunk.github.io/mkdocs-material/reference/abbreviations/)
-- 创建新条目: 如果你的修改涉及新增条目，你需要同时在`mkdocs.yml`中修改导航目录。
-
+1. 在 `docs/` 下对应章节目录创建 `.md` 文件；
+2. 打开 `mkdocs.yml`，在 `nav` 中加入新文件的引用；
+3. 运行 `mkdocs serve` 验证导航与渲染；
+4. 提交 PR 时附带简短说明，便于评审。
 
 ## 推荐工具
 
-- Git版本控制: SourceTree / GitKraken
-- Markdown编辑工具: Typora / Visual Studio Code
+- **Markdown 编辑**：Visual Studio Code（配合 Markdown All in One 插件）、Obsidian、Zed
+- **Git 图形化**：命令行 `git`、GitHub Desktop、SourceTree、GitKraken
+- **预览**：本地 `mkdocs serve`；也可在 GitHub 上直接预览单个 Markdown 文件
+
+## 参考
+
+- [MkDocs 官方文档](https://www.mkdocs.org/)
+- [Material for MkDocs 参考](https://squidfunk.github.io/mkdocs-material/reference/)
+- [PyMdown Extensions](https://facelessuser.github.io/pymdown-extensions/)
