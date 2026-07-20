@@ -376,7 +376,7 @@ Apollo RT6 是百度 2022 年发布的第六代自动驾驶专用车辆，基于
 
 ## 与竞争对手技术对比
 
-| 维度 | 百度 Apollo / RT6 | Waymo Driver（第六代） | Tesla FSD v12 |
+| 维度 | 百度 Apollo / RT6 | Waymo Driver（第六代） | Tesla FSD |
 | --- | --- | --- | --- |
 | **传感器方案** | LiDAR（8颗）+ Camera（12颗）+ Radar（5颗） | LiDAR（29颗）+ Camera（29颗）+ Radar | 纯视觉（8 Camera，无 LiDAR） |
 | **高精地图依赖** | 强（厘米级 HD Map + 点云地图） | 强（Waymo HD Map） | 弱（仅标准导航地图，端到端神经网络） |
