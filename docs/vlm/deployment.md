@@ -274,17 +274,18 @@ Flash Attention通过分块计算（tiling）和核融合（kernel fusion）优�
 
 **NVIDIA Orin：**
 
-- 算力：275 TOPS (INT8)
+- 算力：254 TOPS (INT8，DRIVE AGX Orin 车规版；Jetson AGX Orin 64GB 标称 275 TOPS)
 - GPU架构：Ampere，2048 CUDA核心
 - 功耗：15–60 W（可配置）
 - 适用场景：轻量VLM（2–3B参数INT4）实时推理
 
-**NVIDIA Thor（下一代）：**
+**NVIDIA Thor（已量产）：**
 
-- 算力：2000 TOPS (INT8)
-- GPU架构：Blackwell
-- 功耗：100 W 级别
+- 算力：1000 TOPS (INT8) / 2000 TFLOPS (FP4)
+- GPU架构：Blackwell，原生支持 FP4，专为 Transformer 与 VLA 负载优化
+- 功耗：100–150 W 级别
 - 适用场景：中等规模VLM（7–13B参数）车端实时推理
+- 量产状态：2026 年随奔驰 CLA 交付；双 Thor 的 DRIVE AGX Hyperion 10 面向 L4
 
 ### 7.2 Qualcomm Ride 平台
 
