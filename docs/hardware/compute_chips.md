@@ -524,16 +524,27 @@ NVIDIA Thor 和 AMD MI300 系列均采用了 Chiplet 设计理念。未来自动
 
 传统的分布式 ECU 架构正在向 **中央计算架构** 演进：
 
-```
-传统架构（分布式）：
-  ADAS ECU + 座舱 ECU + 车身 ECU + 底盘 ECU + ... （数十个 ECU）
+```mermaid
+graph LR
+    subgraph dist["传统架构（分布式）"]
+        direction TB
+        e1["ADAS ECU"]
+        e2["座舱 ECU"]
+        e3["车身 ECU"]
+        e4["底盘 ECU"]
+        e5["…数十个独立 ECU"]
+    end
 
-中央计算架构：
-  中央计算单元（HPC）
-    ├─ 自动驾驶域
-    ├─ 智能座舱域
-    ├─ 车身控制域
-    └─ 底盘动力域
+    subgraph central["中央计算架构"]
+        direction TB
+        hpc["中央计算单元 HPC"]
+        hpc --> ad["自动驾驶域"]
+        hpc --> ck["智能座舱域"]
+        hpc --> bd["车身控制域"]
+        hpc --> ch["底盘动力域"]
+    end
+
+    e5 ==>|"域控制器整合"| hpc
 ```
 
 中央计算架构要求单一芯片或芯片组具备 **多域融合** 能力，同时处理自动驾驶、座舱交互、车身控制等多种任务。NVIDIA Thor 与高通 Snapdragon Ride Flex / Ride Elite 正是面向这一趋势设计的；2026 年初零跑基于 Ride Elite + Cockpit Elite 发布的跨域中央计算平台是首个量产案例。

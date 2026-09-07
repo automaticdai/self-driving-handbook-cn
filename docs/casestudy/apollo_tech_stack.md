@@ -38,6 +38,13 @@ Apollo 软件栈分层架构：
 └──────────────────────────────────────────────────────┘
 ```
 
+下图展示模块之间的实际连接关系，并区分了**数据流**与**控制流**。值得注意的是 Guardian 与 Monitor 构成的安全监控链路：Monitor 汇总各模块健康状态，Guardian 则在检测到异常时越过 Control 直接干预 CANBus 输出——这是 Apollo 在模块化架构中实现"安全兜底"的关键设计。
+
+![Apollo 模块间的数据流与控制流（含 Guardian/Monitor 安全链路）](assets/apollo-module-dataflow.png)
+
+!!! note "模块集对应 Apollo 3.x 时代"
+    图中的 Relative Map（相对地图）等模块属于 Apollo 3.x 的模块划分，用于支持无高精地图场景。后续版本的模块组织有所调整，但数据流/控制流分离与 Guardian 兜底的设计思想一直保留。
+
 ### 1.2 Cyber RT 通信机制
 
 Cyber RT 是 Apollo 自研的实时通信框架，在 ROS 基础上做了大量工程优化：
