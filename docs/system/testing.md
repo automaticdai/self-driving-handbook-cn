@@ -84,7 +84,7 @@
 |------|------|
 | CARLA | 开源，基于虚幻引擎4/5，支持Python API，传感器模型丰富 |
 | Apollo仿真平台 | 与百度Apollo深度集成，支持场景编辑与批量测试 |
-| LGSVL Simulator | LG开源仿真器，支持ROS/Cyber RT接口 |
+| LGSVL Simulator | LG开源仿真器，支持ROS/Cyber RT接口（2022 年起停止维护）|
 | 自定义回放工具 | 企业内部开发，针对特定数据格式和接口定制 |
 
 ### 3.3 优势与局限

@@ -37,7 +37,7 @@
 
 ### 5.1 仿真平台（platforms）
 
-介绍当前自动驾驶仿真领域的主流平台，包括开源方案（CARLA、SUMO、AirSim）和商业方案（NVIDIA DRIVE Sim、51Sim-One）。对比各平台在渲染质量、传感器仿真精度、交通流建模和 API 开放性等方面的特点，并提供选型指南。
+介绍当前自动驾驶仿真领域的主流平台，包括开源方案（CARLA、SUMO）和商业方案（NVIDIA DRIVE Sim、51Sim-One），并说明已停止维护的历史平台（LGSVL、AirSim）现状。对比各平台在渲染质量、传感器仿真精度、交通流建模和 API 开放性等方面的特点，并提供选型指南。
 
 ### 5.2 仿真环境建模（environment）
 

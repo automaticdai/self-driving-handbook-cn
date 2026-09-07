@@ -82,7 +82,7 @@ $$\boldsymbol{\Sigma}' = \mathbf{J} \mathbf{W} \boldsymbol{\Sigma} \mathbf{W}^T 
 
 ### 2.1 OpenDRIVE 格式
 
-OpenDRIVE 是国际通用的高精地图描述标准，被 CARLA、LGSVL、SUMO 等仿真平台广泛支持。OpenDRIVE 文件以 XML 格式描述道路网络，核心层次结构为：
+OpenDRIVE 是国际通用的高精地图描述标准，被 CARLA、SUMO、esmini、VTD 等仿真平台广泛支持（LGSVL 亦支持，但已停止维护）。OpenDRIVE 文件以 XML 格式描述道路网络，核心层次结构为：
 
 ```
 Road

@@ -53,8 +53,8 @@ $$T_{total} = \frac{N \cdot T_s}{P} + T_{overhead}$$
 
 | 工具              | 角色         | 说明                           |
 |:-----------------:|:----------:|:-----------------------------:|
-| CARLA / LGSVL     | 场景引擎       | 提供三维渲染与传感器仿真                  |
-| OpenScenario      | 场景描述       | 标准化场景格式（XML/YAML）              |
+| CARLA（或 DRIVE Sim）| 场景引擎       | 提供三维渲染与传感器仿真（LGSVL 已停维，不建议新建项目采用）|
+| OpenSCENARIO XML / DSL | 场景描述     | 标准化场景格式，见[场景生成](scenarios.md) |
 | ROS 2 / Cyber RT  | 中间件        | 连接仿真器与被测算法栈                    |
 | pytest / gtest    | 测试框架       | 自动化 pass/fail 判定                |
 | Grafana / InfluxDB | 结果可视化     | 仿真指标的实时监控与历史趋势分析              |

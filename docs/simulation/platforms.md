@@ -8,7 +8,14 @@
 
 ### 1.1 CARLA
 
-**CARLA**（Car Learning to Act）是由英特尔实验室与巴塞罗那自治大学（CVC）联合开发的开源自动驾驶仿真平台，基于 Unreal Engine 4 构建。
+**CARLA**（Car Learning to Act）是由英特尔实验室与巴塞罗那自治大学（CVC）联合开发的开源自动驾驶仿真平台，是学术界事实标准。
+
+!!! warning "两条并行的版本线：UE 4.26 与 UE 5.5"
+    **CARLA 0.10.0**（2024 年 12 月）将引擎从 Unreal Engine 4.26 迁移到 **UE 5.5**，引入 **Lumen**（全局光照）与 **Nanite**（虚拟几何体），相机传感器的视觉保真度大幅提升，并附带升级版 Town 10 与重建模的车辆资产。
+    
+    但两条版本线会长期并存：UE 5.5 版尚未迁移全部功能与资产，许多依赖旧资产或旧 API 的工作仍需留在 UE 4.26 版。两者文档也分开托管（UE 4.26 为 `carla.readthedocs.io`，UE 5.5 为 `carla-ue5.readthedocs.io`）。
+    
+    **选型建议**：以感知/渲染保真度为主的研究选 UE 5.5 版；需要复现既有基准（如 Bench2Drive、CARLA Leaderboard 2.0）的工作仍应使用 UE 4.26 版，否则结果不可比。
 
 **架构设计：**
 
@@ -124,8 +131,10 @@ traci.close()
 - 支持多种车辆动力学模型，从简单运动学到完整动力学模型
 - 提供丰富的 API 支持（Python、C++、C#、Java）
 
-!!! note "AirSim 与 Project AirSim"
-    微软已于 2022 年将 AirSim 归档，并推出商业化后继产品 **Project AirSim**，定位于工业级无人机与自主系统仿真。原始 AirSim 代码仍可通过 GitHub 获取。
+!!! warning "AirSim 已归档，不建议用于新项目"
+    微软已将 AirSim 研究项目 **归档**，不再有任何新功能或更新；原始代码仍可从 GitHub 获取，作为仿真后端依然可用但已停止演进。
+    
+    其维护接力由 **IAMAI Simulations**（原微软 AirSim 团队工程师创立）承接，以 **Project AirSim**（基于 UE5、全新 API）继续开发。新项目若需要 UE 系仿真，实际可选项是 CARLA（开源、自动驾驶生态完整）或 Project AirSim（偏无人机与通用自主系统）。
 
 **车辆动力学模型：**
 
@@ -168,6 +177,20 @@ $$\beta = \arctan\left(\frac{l_r}{l_f + l_r} \tan(\delta_f)\right)$$
 
     该渲染方程精确模拟了光线的发射、反射与散射过程，使传感器仿真数据更接近真实传感器输出。
 
+**2025–2026 年的扩展：从"建模场景"到"重建场景"**
+
+NVIDIA 的仿真栈已从手工构建 3D 资产扩展为以真实日志重建为主：
+
+- **Omniverse NuRec**：一组 **3D 高斯泼溅（3DGS）** 库，直接摄入真实多传感器行车数据，重建出可交互的 OpenUSD 场景，再渲染新视角与新轨迹，用于回放、验证与合成数据生成
+- **InstantNuRec**：前馈式神经重建模型，**单次前向传播** 即可把多视角行车日志转为可仿真的 3DGS 世界，为每个像素输出一个包含几何、外观与运动的高斯基元，可实时渲染
+- **AlpaSim**：开源闭环仿真框架，用于在海量虚拟场景中检验策略行为
+- **OmniDreams**：实时生成式世界模型，与 Alpamayo 1 策略模型和 AlpaSim 编排器组成闭环，充当高响应的反应式环境
+
+NuRec 库已与 Isaac Sim、AlpaSim 以及 **CARLA** 打通——这意味着神经重建不再是某一家商业平台的专属能力。
+
+!!! tip "为什么重建比建模更重要"
+    手工建模场景的成本与真实度都受美术产能限制，且无法覆盖真实路网的长尾外观。神经重建把"采集到的每一段真实道路"直接变成可仿真资产，代价是重建场景内的可编辑性弱于手工资产。当前的实际工程组合是：**手工资产做可控的极端场景，神经重建做规模化的真实场景覆盖**。相关的生成式路线见 [世界模型](../algorithm/world_models.md)。
+
 ---
 
 ### 1.6 51Sim-One
@@ -189,8 +212,8 @@ $$\beta = \arctan\left(\frac{l_r}{l_f + l_r} \tan(\delta_f)\right)$$
 
 | 特性 | CARLA | LGSVL | SUMO | AirSim | DRIVE Sim | 51Sim-One |
 |------|-------|-------|------|--------|-----------|-----------|
-| **渲染引擎** | UE4 | Unity HDRP | 无（2D） | UE4 | Omniverse | 自研 |
-| **开源/商业** | 开源 (MIT) | 开源 (停维) | 开源 (EPL-2.0) | 开源 (MIT) | 商业 | 商业 |
+| **渲染引擎** | UE 4.26 / UE 5.5 | Unity HDRP | 无（2D） | UE4 | Omniverse (+NuRec 3DGS) | 自研 |
+| **开源/商业** | 开源 (MIT) | 开源 (停维) | 开源 (EPL-2.0) | 开源 (**已归档**) | 商业 | 商业 |
 | **传感器保真度** | 高 | 高 | 不适用 | 高 | 极高 | 高 |
 | **交通流仿真** | 中等 | 中等 | 极强 | 弱 | 强 | 强 |
 | **ROS/ROS2 支持** | 桥接 | 原生 | 桥接 | 桥接 | 原生 | 桥接 |
@@ -423,8 +446,9 @@ $$C = \frac{|\mathcal{S}_{\text{tested}}|}{|\mathcal{S}_{\text{total}}|} \times 
 |------|------|-------------|
 | **云原生化** | 仿真从本地工作站迁移至云端 | Applied Intuition, AWS RoboMaker |
 | **传感器真实感提升** | 光线追踪与神经渲染结合 | DRIVE Sim, NeRF |
-| **AI 原生场景生成** | 生成式模型替代手动场景构建 | GAIA-1, DriveDreamer |
-| **标准化与互操作** | OpenSCENARIO 2.0 等标准推动 | ASAM 标准组织 |
+| **AI 原生场景生成** | 生成式模型替代手动场景构建 | GAIA-3, Cosmos 3, OmniDreams |
+| **神经重建仿真** | 用真实日志重建可仿真的 3DGS 场景 | Omniverse NuRec, InstantNuRec |
+| **标准化与互操作** | OpenSCENARIO XML 与 DSL 双轨并行 | ASAM 标准组织 |
 | **验证方法论成熟** | 覆盖率驱动、形式化验证 | Foretellix, RSS |
 | **软硬件协同仿真** | SIL/HIL 无缝切换 | dSPACE, DRIVE Sim |
 
