@@ -30,8 +30,8 @@
 | --- | --- | --- | --- |
 | CPU | 12× Arm A78AE | 6× Arm A78AE | 16× Arm A78AE |
 | GPU | Ampere 2048 core | Ampere 1024 core | Blackwell |
-| NPU | 170 TOPS | 84 TOPS | ~2000 TOPS |
-| 内存 | LPDDR5 256 GB/s | LPDDR5 102 GB/s | HBM |
+| NPU | 254 TOPS（INT8） | 84 TOPS（INT8） | 1000 TOPS（INT8）/ 2000 TFLOPS（FP4） |
+| 内存 | LPDDR5 204 GB/s | LPDDR5 102 GB/s | LPDDR5X |
 | 功耗 | 60 W | 25 W | ~150 W |
 | 功能安全 | ASIL-B（SEooC）| ASIL-B | ASIL-B+ |
 
@@ -52,12 +52,12 @@
 
 ### 2.3 地平线征程系列
 
-| 参数 | 征程 5 | 征程 6 |
-| --- | --- | --- |
-| NPU | 128 TOPS | 400+ TOPS |
-| 功耗 | ~30 W | ~50 W |
-| 功能安全 | ASIL-B | ASIL-B |
-| 优势 | 国产生态，与百度/大众量产适配 | 城区自驾能力 |
+| 参数 | 征程 5 | 征程 6M | 征程 6P |
+| --- | --- | --- | --- |
+| NPU | 128 TOPS | 128 TOPS | 560 TOPS |
+| 功耗 | ~30 W | ~35 W | ~70 W |
+| 功能安全 | ASIL-B | ASIL-B | ASIL-B |
+| 优势 | 国产生态，与百度/大众量产适配 | 普惠城区 NOA | 旗舰城区 + HSD 全栈方案 |
 
 **特色：** 国内供应链，工具链（天工开物 BPU SDK）持续迭代；适合中国市场量产。
 

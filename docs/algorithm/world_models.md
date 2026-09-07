@@ -385,6 +385,14 @@ MagicDrive 专注于多视角、可控的驾驶视频生成：
 - 条件控制包括：3D 边界框布局、BEV 地图、文本描述
 - 可精确控制场景中车辆和行人的位置、类型和运动轨迹
 
+**WoVogen（World-Volume Generation，2024）**：
+
+WoVogen 在**三维体积空间**中进行场景生成，而非逐视角生成图像：
+
+- 先构建场景的体积表示，再从体积渲染出各摄像头视角
+- 由于所有视角共享同一份三维体积，多摄像头之间的几何一致性由构造保证
+- 相比 DriveDreamer 等逐视角扩散方案，显著缓解了"同一物体在相邻视角中位置/形状矛盾"的问题
+
 **DriveWM（2024）**：
 
 DriveWM 将世界模型与多视角一致性显式结合：
@@ -393,7 +401,38 @@ $$\mathcal{L} = \mathcal{L}_\text{recon} + \lambda_\text{mv}\mathcal{L}_\text{mu
 
 其中 $\mathcal{L}_\text{multi-view}$ 约束不同视角之间的几何一致性，$\mathcal{L}_\text{temporal}$ 约束相邻帧之间的时序连贯性。
 
-### 6.3 生成训练数据
+### 6.3 2025–2026：从"生成数据"走向"评测基础设施"
+
+2024 年的世界模型主要被当作 **数据增强器**；2025–2026 年的这一代则把重心移到了 **评测与验证**——因为真正卡住量产的不是训练数据不够，而是"改完模型如何证明它变好了"。
+
+**GAIA-3（Wayve, 2025 年 12 月）**：
+
+- **150 亿参数**，训练数据量为 GAIA-2 的 10 倍，重新设计了视频 tokenizer
+- 定位明确从"生成"转向 **评估与验证**：在多样化与安全关键条件下，对自动驾驶性能做 **一致、可重复** 的评测
+- 支持跨车型、跨环境、跨场景的泛化评估——即同一套评测可用于不同车辆平台
+
+**Waymo World Model（2026 年 2 月）**：
+
+- 构建在 Google DeepMind **Genie 3** 通用世界模型之上，针对驾驶域做了适配
+- 关键差异：输出 **多传感器** 高保真数据，同时包含摄像头与 **LiDAR**，而非仅生成视频
+- 用于生成极难预测的边缘场景（龙卷风、被淹街道，乃至"路上的大象"）
+- 意义：这是首次由商业 Robotaxi 运营商把生成式世界模型直接接入其量产验证闭环
+
+**NVIDIA Cosmos 3（2026 年）**：
+
+- 开源的物理 AI 基础模型，采用 **mixture-of-transformers** 架构，在同一模型中处理文本、图像、视频、音频与动作
+- 配套 **Cosmos Policy** 将世界模型从"模拟环境"扩展到"生成动作"
+- 是 NVIDIA Alpamayo 等驾驶 VLA 模型的底座之一（见 [VLM 展望与挑战](../vlm/outlook.md)）
+
+**中国厂商**：
+
+- **蔚来 NWM**（2026 年 1 月）：国内首个将 **闭环强化学习** 与世界模型系统性结合的方案，形成"世界模型 + 闭环 RL"的训练架构
+- **小鹏 X-World**、**华为 WEWA 2.0**（云端世界模型引入"多智能体博弈"机制）等，均把世界模型作为云端训练与验证的核心组件
+
+!!! tip "为什么关键价值是评测，而不是数据"
+    合成数据能提升训练集覆盖，但它的收益会随真实数据规模增长而递减。评测则相反：真实道路上的长尾场景 **无法按需复现**，而一次回归测试需要同一场景重复上千次。世界模型的不可替代价值在于把"不可重复的真实事故"变成"可重复的测试用例"——这也是 GAIA-3 与 Waymo World Model 都强调 *repeatable evaluation* 的原因。
+
+### 6.4 生成训练数据
 
 世界模型生成的合成数据可以有效扩充训练集，尤其是覆盖真实数据中稀缺的长尾场景：
 
@@ -414,7 +453,7 @@ $$\mathcal{L} = \mathcal{L}_\text{recon} + \lambda_\text{mv}\mathcal{L}_\text{mu
 
 $$o_\text{aug} = \text{Decoder}\left(f_\theta(z_\text{real}, c_\text{new})\right), \quad c_\text{new} \in \{\text{rain}, \text{night}, \text{fog}, \text{accident}, \ldots\}$$
 
-### 6.4 闭环仿真
+### 6.5 闭环仿真
 
 传统自动驾驶仿真（如 CARLA）依赖手工构建的三维场景和规则驱动的交通参与者行为，在场景多样性和交通行为真实性上存在不足。基于世界模型的闭环仿真通过学习真实数据中的场景分布和交通动态，实现更逼真的仿真环境：
 
@@ -509,7 +548,9 @@ $$\text{误差累积}: \quad \epsilon_T \leq \sum_{t=1}^{T} \epsilon_t + \sum_{t
 
 **计算成本**
 
-大规模世界模型（如 GAIA-1 的 9B 参数）在推理时的计算开销远超实时要求。即使在潜在空间中操作，每个时间步的世界模型推理 + 多候选轨迹评估仍然是巨大的计算负担。
+大规模世界模型在推理时的计算开销远超实时要求：从 GAIA-1 的 9B 参数到 GAIA-3 的 15B，模型规模仍在增长。即使在潜在空间中操作，每个时间步的世界模型推理 + 多候选轨迹评估仍然是巨大的计算负担。
+
+这也解释了 2026 年的工程分工：**世界模型留在云端做训练与评测，车端只跑蒸馏后的策略模型**。目前没有任何量产方案把生成式世界模型直接放到车上做在线推理。
 
 | 挑战 | 影响 | 当前缓解策略 |
 |:---:|:---:|:---:|
@@ -596,6 +637,16 @@ $$\text{FVD} \propto N^{-\alpha} \cdot D^{-\beta}$$
 
 13. **Gao, R., et al.** "MagicDrive: Street View Generation with Diverse 3D Geometry Control." *ICLR 2024*. [arXiv:2310.02601](https://arxiv.org/abs/2310.02601)
 
-14. **Huang, Y., et al.** "GaussianFormer: Scene as Gaussians for Vision-Based 3D Semantic Occupancy Prediction." *ECCV 2024*.
+14. **Lu, J., et al.** "WoVoGen: World Volume-aware Diffusion for Controllable Multi-camera Driving Scene Generation." *ECCV 2024*. [arXiv:2312.02934](https://arxiv.org/abs/2312.02934)
 
-15. **Wang, Y., et al.** "Driving into the Future: Multiview Visual Forecasting and Planning with World Model for Autonomous Driving (DriveWM)." *CVPR 2024*.
+15. **Huang, Y., et al.** "GaussianFormer: Scene as Gaussians for Vision-Based 3D Semantic Occupancy Prediction." *ECCV 2024*.
+
+16. **Wang, Y., et al.** "Driving into the Future: Multiview Visual Forecasting and Planning with World Model for Autonomous Driving (DriveWM)." *CVPR 2024*.
+
+17. **Wayve.** *"Wayve launches GAIA-3, advancing world models from simulation to evaluation."* Wayve Press Release, 2025 年 12 月.
+
+18. **Waymo.** *"The Waymo World Model: A New Frontier For Autonomous Driving Simulation."* Waymo Blog, 2026 年 2 月.
+
+19. **NVIDIA.** *"NVIDIA Launches Cosmos 3, the Open Frontier Foundation Model for Physical AI."* NVIDIA Newsroom, 2026.
+
+20. **NVIDIA.** *"Alpamayo-R1: Bridging Reasoning and Action Prediction for Generalizable Autonomous Driving in the Long Tail."* [arXiv:2511.00088](https://arxiv.org/abs/2511.00088), 2025.

@@ -39,6 +39,9 @@
 - **官方子挑战**：Motion Prediction、Occupancy & Flow、Sim Agents、End-to-End Driving；
 - **特点**：传感器最齐全、标注工程质量最高；下载需同意 Waymo license，不可商用。
 
+!!! note "2026 年 Waymo 不再举办正式挑战赛"
+    Waymo 已宣布 **2026 年不举办正式的 Challenges**，但 Waymo Open Dataset 的 **leaderboard 仍然完全开放**，鼓励研究者继续提交以对比模型。这对科研节奏有实际影响：过去"每年 CVPR 前冲榜"的固定周期不再存在，评测更接近持续提交模式。
+
 ### 2.3 nuScenes（2019，Motional 前身 nuTonomy）
 
 - **规模**：1 000 段 20 秒场景，约 1.4 M 图像 + 390 k LiDAR 扫描；
@@ -59,7 +62,24 @@
 - **BDD100K**（2018，伯克利）：100 k 视频 + 100 k 图像，10 类任务，覆盖美国多州；
 - **Mapillary Vistas**（2017）：25 k 全球众包图像，100+ 国家，多文化场景。
 
-### 2.6 中国本土数据集
+### 2.6 NVIDIA Physical AI Autonomous Vehicles（2025）
+
+NeurIPS 2025 随 Alpamayo 模型族一同发布，是目前规模最大的开放自动驾驶数据集：
+
+| 维度 | 规模 |
+| --- | --- |
+| 时长 | 约 **1 700 小时**（官方另有 1 727 小时口径） |
+| 地理覆盖 | **25 个国家、2 500+ 城市** |
+| 片段 | **306 152** 段，每段 20 秒 |
+| 传感器 | 全部片段含多摄像头；298 326 段含 LiDAR；160 761 段含毫米波雷达 |
+| 体积 | 约 **133 TB**（约为 Waymo Open Dataset 的 3 倍） |
+
+!!! success "最重要的一点是许可，而不是规模"
+    Waymo Open、nuScenes 等主流数据集均 **限研究用途**，这使得学术成果难以直接进入产品。该数据集按其许可协议 **可用于商业与非商业 AV 开发**，并托管在 Hugging Face 上。对需要落地的团队而言，这一条比"3 倍于 WOD"的体量更有价值。
+    
+    但仍需注意：跨 25 个国家的数据意味着法规与隐私口径差异极大，实际使用前应确认目标市场的数据合规要求（尤其中国的数据出境规定）。
+
+### 2.7 中国本土数据集
 
 | 数据集 | 发布者 | 特色 |
 | --- | --- | --- |
@@ -104,12 +124,35 @@
 
 | 基准 | 任务 | 特点 |
 | --- | --- | --- |
+| **WOD-E2E**（CVPR 2026） | 长尾端到端驾驶 | 专门挖掘罕见高风险事件；以人类偏好评分替代专家轨迹对齐 |
+| **NAVSIM v2**（CoRL 2025） | 伪闭环端到端评测 | 两阶段协议 + 3DGS 反事实视角合成 |
 | **CARLA / Bench2Drive** | 端到端驾驶 | 仿真闭环，允许密集交互 |
 | **nuScenes-OpenScene** | 开放闭环驾驶 | 以 nuScenes 为基础构造虚拟闭环 |
-| **CVPR 2024 End-to-End Challenge** | 真实日志闭环重放 | 允许使用真实传感器数据进行策略评估 |
 | **DriveLM** | 视觉-语言推理 | 场景问答 + 因果链，验证 VLM 驾驶能力 |
 | **NuScenes-QA / LingoQA** | 驾驶问答 | 评估 VLM 对交通环境的理解 |
 | **CODA / Corner Case Bench** | 长尾检测 | 特意采集不常见障碍物（横倒锥桶、异形车辆）|
+
+### 4.1 WOD-E2E：把评测焦点移到长尾
+
+WOD-E2E（Waymo Open Dataset for End-to-End Driving，CVPR 2026）不是"更大的数据集"，而是**刻意偏斜的数据集**：
+
+- **规模**：4 021 段行车片段，约 12 小时——比通用数据集小得多
+- **构造方式**：从 Waymo **640 万英里** 真实日志中挖掘，按人工定义的 **11 类长尾事件** 分类，并要求语料中出现频率 **低于 0.03%**
+- **输入**：360° 视觉 + 详细车辆状态
+- **关键指标**：**Rater Feedback Score（RFS）**——用人类标注的偏好评分衡量轨迹质量，**而非与记录的专家轨迹对齐**
+
+!!! tip "RFS 解决的是一个真实的评测缺陷"
+    传统开环指标（L2 误差、与专家轨迹的偏差）隐含假设"记录的人类轨迹是唯一正确答案"。但在长尾场景中，合理反应往往有多个，且人类司机自己的反应也不一定最优——此时逼近专家轨迹反而会惩罚正确的保守行为。RFS 用人类评分给多种可接受轨迹打分，绕开了这个问题。这也是为什么 **在长尾评测上，开环 L2 误差几乎失去意义**。
+
+### 4.2 NAVSIM v2：用 3DGS 做"伪闭环"
+
+闭环评测最真实但需要仿真器与反应式交通流；开环评测便宜但无法体现误差累积。NAVSIM（NeurIPS 2024）与 **NAVSIM v2**（CoRL 2025）提出的 **伪仿真（Pseudo-Simulation）** 取两者折中：
+
+- **两阶段协议**：第二阶段的合成观测 **依赖于第一阶段的策略行为**，从而体现"决策改变了后续所见"
+- **3DGS 反事实视角**：当策略偏离记录轨迹后，用 3D 高斯泼溅合成偏离位置上的相机视角——这是从日志数据近似闭环的关键
+- **指标**：两阶段扩展 PDMS（**EPDMS**），新增交通灯合规（TLC）、行驶方向合规（DDC）、车道保持（LK）与扩展舒适性（EC）
+
+伪仿真的意义在于：它让"闭环级别的鲁棒性评测"不再必须依赖完整仿真器，而可以直接建立在真实日志之上。
 
 ---
 
@@ -122,13 +165,15 @@
 | 3D 目标检测 | Waymo Open + nuScenes | 华为 ONCE（预训练）、DAIR-V2X（车路协同）|
 | BEV 车道线 | OpenLane-V2 | nuScenes + Argoverse 2 地图 |
 | 运动预测 | WOMD + Argoverse 2 | INTERACTION（高交互性）|
-| 规划闭环评测 | nuPlan | Bench2Drive（仿真）|
-| 端到端 | Bench2Drive + nuPlan | 真实车队日志（自有）|
+| 规划闭环评测 | nuPlan | Bench2Drive（仿真）、NAVSIM v2（伪闭环）|
+| 端到端 | NAVSIM v2 + Bench2Drive | WOD-E2E（长尾）、真实车队日志（自有）|
+| 长尾/极端场景 | WOD-E2E | CODA、世界模型生成场景 |
+| 需商用许可的大规模预训练 | NVIDIA Physical AI AV | 自有车队数据 |
 | VLM 驾驶问答 | DriveLM + LingoQA | CODA（长尾）|
 
 ### 工程化注意事项
 
-1. **许可合规**：Waymo Open、nuScenes 均限研究用途，商业落地前务必核对 license；
+1. **许可合规**：Waymo Open、nuScenes 均限研究用途，商业落地前务必核对 license；需要商用的大规模预训练数据可考虑 NVIDIA Physical AI AV 数据集；
 2. **数据泄漏**：同一 trip 的帧不要跨训练/验证；时间顺序采样而非随机切分；
 3. **多数据集联合训练**：需统一坐标系、类别映射、标注密度，一般以 nuScenes 为基准对齐；
 4. **合成与真实混合**：CARLA/Bench2Drive 适合探索算法上限，必须叠加真实域数据避免 sim2real 崩塌；
@@ -151,7 +196,8 @@
 
 - **感知**：nuScenes + Waymo Open 是事实标准；中国场景用 DAIR-V2X、ONCE、Apollo Scape 补齐；
 - **预测**：WOMD 与 Argoverse 2 是旗帜；INTERACTION 专攻高交互；
-- **规划/端到端**：nuPlan（真实日志）+ Bench2Drive（仿真闭环）是当下组合拳；
+- **规划/端到端**：nuPlan（真实日志）+ Bench2Drive（仿真闭环）+ **NAVSIM v2**（伪闭环）是当下组合拳；长尾能力单独用 **WOD-E2E** 评测；
+- **规模与许可**：**NVIDIA Physical AI AV**（约 1 700 小时、25 国、可商用）改变了"大数据集只能做研究"的局面；
 - **VLM/语言**：DriveLM、LingoQA、NuScenes-QA 是重点新基准；
 - **监管**：California DMV、NHTSA、中国强标提供真实运营安全视角，是技术之外的重要评测渠道。
 
@@ -169,3 +215,7 @@
 6. Jia, X. et al. Bench2Drive: Towards Multi-Ability Benchmarking of Closed-Loop End-To-End Autonomous Driving. NeurIPS 2024.
 7. California DMV. Autonomous Vehicle Disengagement Reports, annual.
 8. NHTSA. Standing General Order on Crash Reporting. 2021–.
+9. Xu, K. et al. WOD-E2E: Waymo Open Dataset for End-to-End Driving in Challenging Long-tail Scenarios. CVPR 2026. [arXiv:2510.26125](https://arxiv.org/abs/2510.26125)
+10. Dauner, D. et al. NAVSIM: Data-Driven Non-Reactive Autonomous Vehicle Simulation and Benchmarking. NeurIPS 2024；及 Pseudo-Simulation for Autonomous Driving. CoRL 2025.
+11. NVIDIA. *PhysicalAI-Autonomous-Vehicles Dataset*. Hugging Face / NeurIPS 2025.
+12. Waymo. *Challenges Overview — Waymo Open Dataset*. 2026（说明 2026 年不举办正式挑战赛）.

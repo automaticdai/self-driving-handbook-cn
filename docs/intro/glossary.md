@@ -234,7 +234,7 @@
 | **OpenSCENARIO** | ASAM 发布的场景描述标准（XML/XOSC）|
 | **OpenDRIVE** | ASAM 发布的道路描述标准（XODR）|
 | **NDS** | Navigation Data Standard，导航地图数据标准 |
-| **CARLA / LGSVL / VTD** | 常见开源/商用自动驾驶仿真器 |
+| **CARLA / LGSVL / VTD** | 常见开源/商用自动驾驶仿真器（LGSVL 已于 2022 年停维）|
 | **PEM** | Perception Error Model，感知误差模型（在仿真中注入感知噪声）|
 | **Collision Rate** | 碰撞率，安全评测核心指标 |
 | **Route Completion** | 路线完成度，CARLA Leaderboard 常用指标 |

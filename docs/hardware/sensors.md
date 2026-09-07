@@ -6,6 +6,11 @@
 
 ---
 
+!!! info "本节包含"
+    - [主动式传感器工程实践](sensors_active.md) — LiDAR/毫米波/超声波的性能对比矩阵、布局策略、在线健康检查
+    - [视觉与定位传感器](sensors_vision_positioning.md) — 摄像头、IMU、GNSS 的工程要点、定位融合建议与运维数据闭环
+    - [摄像头](camera.md) — 车载摄像头的光学、ISP 与产品细节
+
 ## 主要传感器类型概览
 
 | 传感器 | 测量范围 | 精度 | 受天气影响 | 成本 | 典型用途 |
@@ -50,14 +55,23 @@ $$d = \frac{c \cdot \Delta t}{2}$$
 
 - **速腾聚创 RS-M1 / RS-MX**：非重复扫描模式，随时间积累点云密度，水平 FOV 120°，垂直 FOV 25°，探测距离 150 m（反射率 10% 目标），点频 1440 万点/秒（MX），已量产前装。
 - **禾赛科技 AT128**：128 线等效，水平 FOV 120°，垂直 FOV 25.6°，探测距离 200 m（反射率 10%），帧率 10 Hz，是首款量产的混合固态高线束 LiDAR，搭载于理想 L9 等车型。
-- **华为 96 线 LiDAR**：搭载于极狐阿尔法 S HI 版，水平 FOV 120°，垂直 FOV 40°，探测距离 200 m，是华为智能汽车解决方案的核心传感器之一。
+- **禾赛科技 ATX**：面向"激光雷达平权"的小型化产品，已获多家主机厂累计超 400 万台订单，2026 年 4 月起大规模量产交付，是推动 LiDAR 下沉到 15 万元级车型的关键机型。
+- **华为 96 线 LiDAR**：搭载于极狐阿尔法 S HI 版，水平 FOV 120°，垂直 FOV 40°，探测距离 200 m，是华为智能汽车解决方案的核心传感器之一；华为后续机型已随乾崑 ADS 方案大规模上车。
+
+!!! info "数字化激光雷达：把收发链路做进芯片"
+    2025–2026 年的主要技术分水岭是 **数字化架构**——用 SPAD-SoC（单光子雪崩二极管阵列 + 片上处理）替代分立的 APD + 模拟前端，配合 940 nm VCSEL 面阵光源，把收发链路集成进芯片。代表产品是速腾聚创 **EM4**（EM 数字化平台首款产品），最高等效 2160 线，另有 520/720/1080 线配置版本。EM 平台累计获得 13 家车企 56 款车型定点，其中 EM4 独家中标比亚迪 2026 年 3 月集中发布的 11 款新车，并已在极氪 9X、智己 LS9/LS6 等车型量产。数字化路线的意义在于：线数提升不再线性推高 BOM 成本，这是 LiDAR 单价跌向千元区间的主要推力。
 
 ### 1.4 MEMS 固态 LiDAR
 
 MEMS（微机电系统）LiDAR 使用微振镜偏转激光束，无宏观旋转部件，理论上可靠性更高、成本更低。
 
 - **Innoviz One / InnovizTwo**：以色列 Innoviz 公司产品，InnovizTwo 探测距离 300 m，FOV 100°×25°，点频 300 万点/秒，BMW 等车企采用。
-- **Luminar Iris**：美国 Luminar 公司，使用 1550 nm 波长激光（人眼安全且可大功率发射），探测距离 250 m，点频 250 万点/秒，沃尔沃 EX90 前装量产。
+- **Luminar Iris**：美国 Luminar 公司，使用 1550 nm 波长激光（人眼安全且可大功率发射），探测距离 250 m，点频 250 万点/秒，曾在沃尔沃 EX90 上前装量产。
+
+!!! warning "Luminar 已破产清算（2026 年）"
+    Luminar 于 **2025 年 12 月 15 日**在美国德克萨斯南区破产法院申请 Chapter 11 破产保护。直接触发因素是沃尔沃于 2025 年 11 月通知不再在 EX90 / ES90 上使用其传感器——Luminar 由此失去了唯一的大规模前装客户。2026 年 1 月 26 日的资产拍卖中，**MicroVision 以 3300 万美元竞得其激光雷达业务**（Iris 与 Halo 的 IP、库存、部分工程与运营团队及商务合同），法院于 1 月 27 日批准，交易 2 月 3 日完成；其半导体子公司 Luminar Semiconductors 则由 Quantum Computing Inc. 以 1.1 亿美元购得。
+    
+    这一结局对技术选型有直接启示：**1550 nm 长距路线的性能优势没能抵消其成本与量产劣势**。评估 LiDAR 供应商时，除了性能参数，还应把年出货量、盈利能力与客户集中度作为硬性筛选条件——传感器是整车生命周期内需要持续供货与质保的部件。
 
 ### 1.5 FMCW 调频连续波 LiDAR
 
@@ -81,11 +95,16 @@ $$v_r = \frac{f_d \cdot \lambda}{2}$$
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Velodyne | VLP-16 | 机械旋转 | 16 | 100 m | 360° | 30 | ~$4,000 | 已量产（研究/测试） |
 | Velodyne | HDL-64E | 机械旋转 | 64 | 120 m | 360° | 130 | ~$75,000 | 已量产（研究/测试） |
-| 禾赛科技 | AT128 | 混合固态 | 128 | 200 m | 120° | 153 | ~$500（目标） | 前装量产 |
-| 速腾聚创 | RS-MX | 混合固态 | — | 150 m | 120° | 1440 | 待定 | 前装量产 |
-| Luminar | Iris | MEMS固态 | — | 250 m | 120°×30° | 250 | ~$500（目标） | 前装量产 |
+| 禾赛科技 | AT128 | 混合固态 | 128 | 200 m | 120° | 153 | ~$500 | 前装量产 |
+| 禾赛科技 | ATX | 混合固态（小型化） | — | — | 120° | — | 千元级 | 前装量产（2026 年 4 月起交付） |
+| 速腾聚创 | RS-MX | 混合固态 | — | 150 m | 120° | 1440 | 千元级 | 前装量产 |
+| 速腾聚创 | EM4 | 数字化（SPAD-SoC） | 最高 2160 | — | — | — | 待定 | 前装量产（极氪 9X、智己 LS9/LS6） |
+| Luminar | Iris | MEMS固态 | — | 250 m | 120°×30° | 250 | — | **停产**（资产 2026 年被 MicroVision 收购） |
 | Innoviz | InnovizTwo | MEMS固态 | — | 300 m | 100°×25° | 300 | 待定 | 前装量产 |
 | Aeva | Aeries II | FMCW | — | 300 m | 120°×30° | — | 待定 | 研发/测试 |
+
+!!! note "行业格局（2026 年上半年车载出货量）"
+    禾赛科技 68 万台、华为 45 万台、速腾聚创 ADAS 43.66 万台、图达通 40.25 万台——四家构成国内车载 LiDAR 第一梯队，合计占据绝大多数份额。禾赛在 2025 年成为全球首家年产量突破 100 万台的激光雷达企业，并计划 2026 年将产能从 200 万台翻倍至 400 万台；同时被 NVIDIA 选为 DRIVE Hyperion 10 的 L4 激光雷达合作伙伴。中国厂商已在全球车载 LiDAR 供应链中占据主导地位，而美欧厂商（Velodyne/Ouster 合并、Ibeo 与 Luminar 破产）持续退出——这是 2020 年前后行业预期的重大反转。
 
 ### 1.7 LiDAR 关键性能指标解读
 
@@ -438,3 +457,9 @@ IMU 主要误差来源包括：
 4. Geiger, A., Lenz, P., Urtasun, R. "Are we ready for Autonomous Driving? The KITTI Vision Benchmark Suite". *CVPR*, 2012.
 5. Forster, C., Carlone, L., Dellaert, F., Scaramuzza, D. "IMU Preintegration on Manifold for Efficient Visual-Inertial Maximum-a-Posteriori Estimation". *RSS*, 2015.
 6. 徐贵力, 毛志华. 《卫星导航原理与应用》. 国防工业出版社, 2020.
+7. Hesai Group. *"Hesai Becomes the World's First Lidar Company to Produce 1 Million Units in 2025."* 禾赛科技官方新闻, 2026 年 1 月.
+8. Hesai Group. *"Hesai Selected by NVIDIA as Lidar Partner for NVIDIA DRIVE Hyperion 10."* PR Newswire, 2026.
+9. MicroVision, Inc. *"MicroVision Announces Agreement to Acquire Luminar Assets."* Form 8-K / 投资者关系新闻稿, 2026 年 1–2 月.
+10. Luminar Technologies, Inc. *Form 8-K: Chapter 11 Petition*. SEC EDGAR, 2025 年 12 月 15 日.
+11. 速腾聚创. *EM 数字化激光雷达平台与 EM4 产品资料*. RoboSense 官方资料, 2026.
+12. NE 时代 / 高工智能汽车. *2026 年上半年车载激光雷达装机量统计*. 2026.

@@ -95,20 +95,25 @@ $$\eta_{\text{eff}} = \frac{T_{\text{actual}}}{T_{\text{peak}}} \times 100\%$$
 
 NVIDIA 是自动驾驶计算平台的领导者，凭借 CUDA 生态和持续的硬件迭代构建了强大的竞争壁垒。
 
-**Orin 系列**：当前量产主力，基于 Ampere GPU 架构，已被蔚来、小鹏、理想、比亚迪等众多车企采用。
+**Orin 系列**：上一代量产主力，基于 Ampere GPU 架构，已被蔚来、小鹏、理想、比亚迪等众多车企广泛采用，目前仍是存量车型的主力平台。
 
-**Thor（原 Atlan）**：下一代平台，基于 Blackwell GPU 架构，算力跃升至 2000 TOPS，支持多域融合（自动驾驶 + 智能座舱 + 泊车），预计 2025-2026 年量产上车。
+**Thor**：基于 Blackwell GPU 架构，已进入量产交付阶段。首个搭载完整 NVIDIA DRIVE AV 软件栈的量产车型是全新一代 Mercedes-Benz CLA（MB.OS 平台，10 摄像头 + 5 毫米波雷达，官方称"Level 2++"点到点城市辅助驾驶），2026 年内在北美市场交付。
+
+!!! warning "Thor 的 2000 TOPS 是什么口径"
+    NVIDIA 官方对 DRIVE AGX Thor 的标称是 **最高 1000 TOPS（INT8）** 与 **最高 2000 TFLOPS（FP4）**。业界常引用的"2000 TOPS"实际来自 FP4 精度下的浮点吞吐，与 Orin 时代惯用的 INT8 口径不可直接相比。做算力预算时务必确认精度口径——参见本章 1.2 节。
+
+**DRIVE AGX Hyperion 10**：2025 年 10 月 GTC 发布的 L4 参考架构，采用 **双 Thor SoC**（每颗 2000+ TOPS FP4），配套 14 路高清摄像头、9 个毫米波雷达、1 个激光雷达与 12 个超声波传感器的完整传感器套件，并集成 DRIVE OS、DRIVE AV 软件栈与 Halos 安全体系。比亚迪、吉利、五十铃、日产等已宣布采用该架构开发 L4 车型；NVIDIA 与 Uber 计划自 2027 年起部署 10 万台 Robotaxi。
 
 | 参数 | Orin N | Orin X | Thor |
 |:---:|:---:|:---:|:---:|
 | CPU | 6× Arm A78AE | 12× Arm A78AE | 16× Arm A78AE（Grace） |
 | GPU 架构 | Ampere 1024 core | Ampere 2048 core | Blackwell |
-| NPU 算力 | 84 TOPS | 254 TOPS | ~2000 TOPS |
-| 内存 | LPDDR5 102 GB/s | LPDDR5 256 GB/s | HBM/LPDDR5X |
+| NPU 算力 | 84 TOPS | 254 TOPS | 1000 TOPS（INT8）/ 2000 TFLOPS（FP4） |
+| 内存 | LPDDR5 102 GB/s | LPDDR5 204 GB/s | LPDDR5X |
 | 功耗（TDP） | 25 W | 60 W | ~100-150 W |
-| 制程 | 7 nm | 7 nm | 4 nm |
+| 制程 | 三星 8 nm | 三星 8 nm | 4 nm |
 | 功能安全 | ASIL-B | ASIL-B（SEooC） | ASIL-B+ |
-| 目标等级 | L2+/L3 | L3/L4 | L3/L4/L5 |
+| 目标等级 | L2+/L3 | L3/L4 | L2++/L3/L4 |
 
 ### 3.2 Qualcomm（高通）
 
@@ -124,7 +129,11 @@ NVIDIA 是自动驾驶计算平台的领导者，凭借 CUDA 生态和持续的�
 | 功能安全 | ASIL-B | ASIL-B | ASIL-B/D |
 | 通信集成 | 5G/Wi-Fi/BT | 5G/Wi-Fi 7 | 5G/Wi-Fi 7 |
 
-**特色：** 5G/Wi-Fi 通信模组原生集成，是唯一在单芯片上实现座舱 + ADAS + 连接的方案，适合域融合架构。
+**Snapdragon Ride Flex**：全球首个把智能座舱与 ADAS 负载集成在单颗 SoC 上的商用平台，目前已在 8 个全球量产项目上车；国内经纬恒润、德赛西威、航盛、镫芯智驾等 Tier 1 均公布了基于 Ride Flex 的量产集成方案。
+
+**Snapdragon Ride Elite / Cockpit Elite**（2025 年发布，2026 年落地）：面向中央计算架构的新一代平台，已获理想、零跑、极氪、长城、蔚来、奇瑞等 10 个项目定点。CES 2026 上零跑与高通联合发布了全球首个基于 Ride Elite + Cockpit Elite 的跨域融合中央计算平台。
+
+**特色：** 5G/Wi-Fi 通信模组原生集成，是最早在单芯片上实现座舱 + ADAS + 连接的方案，适合域融合与中央计算架构。
 
 ### 3.3 Tesla（特斯拉）
 
@@ -132,19 +141,22 @@ NVIDIA 是自动驾驶计算平台的领导者，凭借 CUDA 生态和持续的�
 
 **HW3（FSD Computer）**：2019 年量产，双芯片冗余设计，专注纯视觉方案。
 
-**HW4**：2023 年开始搭载于 Model S/X/Cybertruck，算力大幅提升，支持更多摄像头输入。
+**HW4（AI4）**：2023 年开始搭载于 Model S/X/Cybertruck，随后铺开至 Model 3/Y，算力大幅提升，支持更多摄像头输入。当前 FSD V14 即运行在该平台上；2026 年 Q2 投产的 Cybercab 同样沿用 AI4 而非 AI5。
+
+**AI5（HW5）**：2026 年 4 月完成流片（比原计划晚约两年）。官方口径为单颗性能约等于一张 NVIDIA H100、双芯片系统约等于 B100/B200，推理算力约在 2000–2500 TOPS 量级，官方宣称约为 AI4 的 40 倍。量产节奏为 **2026 年底工程样片/小批量、规模上车预计 2027 年之后**，且初期产能优先供应 Optimus 机器人与数据中心而非整车；首次采用台积电与三星双代工并行（各自使用自家晶体管库与布线规则）。完整的特斯拉硬件演进见 [Tesla 案例](../casestudy/tesla.md)。
 
 **Dojo**：特斯拉自研的云端训练超级计算机芯片（D1），采用 7 nm 工艺，单芯片 362 TFLOPS（BF16），不用于车端推理，但对车端模型的训练效率至关重要。
 
-| 参数 | HW3（FSD Computer） | HW4 |
-|:---:|:---:|:---:|
-| NPU 算力 | 72 TOPS（双芯片 144） | ~300-500 TOPS |
-| CPU | 12× Arm A72 | 增强型多核 |
-| 内存 | LPDDR4 68 GB/s | LPDDR5 |
-| 摄像头支持 | 8 路 | 12 路 |
-| 制程 | 14 nm | 7 nm |
-| 功耗 | ~72 W（双芯片） | ~100 W |
-| 冗余设计 | 双芯片互校验 | 增强冗余 |
+| 参数 | HW3（FSD Computer） | HW4 / AI4 | AI5 / HW5 |
+|:---:|:---:|:---:|:---:|
+| NPU 算力 | 72 TOPS（双芯片 144） | ~300-500 TOPS | ~2000-2500 TOPS（官方口径） |
+| CPU | 12× Arm A72 | 增强型多核 | 未公开 |
+| 内存 | LPDDR4 68 GB/s | LPDDR5 | 未公开（大幅提升） |
+| 摄像头支持 | 8 路 | 12 路 | 未公开 |
+| 制程 | 14 nm | 7 nm | 台积电 / 三星双代工 |
+| 功耗 | ~72 W（双芯片） | ~100 W | 未公开 |
+| 冗余设计 | 双芯片互校验 | 增强冗余 | 双芯片系统 |
+| 状态 | 存量车型 | 当前主力（FSD V14） | 2026 年 4 月流片，2026 年底小批量 |
 
 ### 3.4 Mobileye（英特尔子公司）
 
@@ -159,7 +171,10 @@ Mobileye 是 ADAS 领域的先驱，以极低功耗和高度集成的视觉处�
 | 目标等级 | L2+/L3 | L2+/L3 | L4 |
 | 特点 | 超低功耗视觉加速 | 增强 AI 能力 | 支持 L4 全自动驾驶 |
 
-**特色：** Mobileye 在功耗效率上处于行业领先，EyeQ5H 以不到 10W 功耗实现 ADAS 所需的全部感知功能。其 RSS（Responsibility Sensitive Safety）安全模型也是独特的竞争力。
+**特色：** Mobileye 在功耗效率上处于行业领先，EyeQ5H 以不到 10W 功耗实现 ADAS 所需的全部感知功能。其 RSS（Responsibility Sensitive Safety）安全模型也是独特的竞争力。EyeQ6H 已于 2024 年底进入量产；主打 L4 的 EyeQ Ultra 则用于 Mobileye Chauffeur/Drive 方案。
+
+!!! note "低功耗路线的代价"
+    Mobileye 的极致能效来自高度定制的视觉加速器，但其工具链封闭程度也最高，车企难以在其上部署自研的大参数端到端模型。这也是近年中国车企在"高阶智驾"项目上普遍转向 Orin/Thor 与国产大算力芯片的原因之一。
 
 ### 3.5 华为（Ascend/MDC 平台）
 
@@ -174,23 +189,38 @@ Mobileye 是 ADAS 领域的先驱，以极低功耗和高度集成的视觉处�
 | 工具链 | AscendCL/MindSpore | AscendCL/MindSpore | AscendCL/MindSpore |
 | 合作车企 | 长安、北汽 | 阿维塔、问界 | 极狐 |
 
-**特色：** 搭配华为全栈智驾方案（ADS），与 MindSpore/CANN 工具链深度集成；国产供应链自主可控。
+**特色：** 搭配华为全栈智驾方案（乾崑 ADS），与 MindSpore/CANN 工具链深度集成；国产供应链自主可控。
+
+2026 年 4 月 23 日的华为乾崑技术大会发布了新一代 **乾崑 ADS 5**（面向 L3），其依托的新一代 MDC 平台仍以"达芬奇"架构的自研昇腾 NPU 为算力引擎，云端训练算力从 2023 年的 2.8 EFLOPS 增长至 60 EFLOPS（29 个月增长 21 倍）。华为公布 2026 年前在智驾领域研发投入超 180 亿元人民币，其中近百亿用于算力基础设施。
 
 ### 3.6 地平线（Horizon Robotics）
 
 地平线是中国领先的车规级 AI 芯片企业，**征程（Journey）** 系列已在国内多家车企量产上车。
 
-| 参数 | 征程 5 | 征程 6E | 征程 6M |
+征程 6（J6）系列以算力分档覆盖 10–560 TOPS，是目前国产方案中唯一从入门 ADAS 贯通到全场景城区辅助驾驶的产品矩阵：
+
+| 型号 | 算力 | 定位 | 量产状态 |
+|:---:|:---:|:---|:---|
+| 征程 6B | 10+ TOPS | 入门级 ADAS | 已量产 |
+| 征程 6L | ~30-40 TOPS | 基础 L2 | 已量产 |
+| 征程 6E | 80 TOPS | 高速 NOA | 已量产（荣威/MG 等） |
+| 征程 6M | 128 TOPS | 普惠城区 NOA（方案 5000 元以内） | 已量产，首发上车比亚迪 |
+| 征程 6H | 约 256 TOPS（报道值） | 中高阶城区 | 2025 年 4 月发布 |
+| 征程 6P | 560 TOPS | 旗舰高阶城区 | 2025 Q3 首发奇瑞星纪元，2026 规模量产 |
+
+| 参数 | 征程 5 | 征程 6M | 征程 6P |
 |:---:|:---:|:---:|:---:|
-| NPU 架构 | BPU（贝叶斯架构） | BPU（增强） | BPU（增强） |
-| 算力 | 128 TOPS | 128 TOPS | 256 TOPS |
-| 功耗 | ~30 W | ~15 W | ~35 W |
-| 制程 | 16 nm | 16 nm | 16 nm |
+| NPU 架构 | BPU（贝叶斯架构） | BPU（纳什架构） | BPU（纳什架构，4 核"四芯合一"） |
+| 算力 | 128 TOPS | 128 TOPS | 560 TOPS |
+| CPU | 8× Arm A55 | — | 18× Arm A78AE（410K DMIPS） |
+| 功耗 | ~30 W | ~35 W | ~70 W |
+| 制程 | 16 nm | 未公开 | 未公开 |
 | 功能安全 | ASIL-B | ASIL-B | ASIL-B |
-| 目标等级 | L2+/L3 | L2+ | L3 |
-| 量产车企 | 理想、比亚迪、大众 | 多家车企 | 量产推进中 |
+| 目标等级 | L2+/L3 | 普惠城区 NOA | L2+ 全场景城区 |
 
 **特色：** 国产自研 BPU 架构，天工开物工具链持续迭代；性价比高，适合中国市场大规模量产。
+
+**征程 6P 与 HSD**：征程 6P 单颗 560 TOPS，可为 15 万元级车型提供约 500 TOPS 算力，双片方案可让 20 万元级车型获得约 1000 TOPS。地平线同期推出一段式端到端的 **HSD（Horizon SuperDrive）** 城区辅助驾驶系统，与征程 6P 一同在奇瑞星纪元品牌全球首发（2025 年 9 月量产），标志国产芯片首次在"大算力 + 全栈软件"上同时对标 Orin/Thor 方案。地平线的商业模式由此从卖芯片转向卖全栈方案——详见 [中国本土玩家](../casestudy/chinese_players.md)。
 
 ### 3.7 黑芝麻智能（Black Sesame）
 
@@ -206,18 +236,37 @@ Mobileye 是 ADAS 领域的先驱，以极低功耗和高度集成的视觉处�
 
 **特色：** A1000 是国内首个通过 ASIL-B 和 ASIL-D 双认证的车规级 AI 芯片。
 
-### 3.8 主流平台综合对比
+### 3.8 车企自研芯片：新兴的第三条路线
+
+2024–2026 年是中国车企集体"造芯"的爆发期。与 Tesla 相同的逻辑是：自研芯片可针对自家算法的算子分布做定制，避免为通用能力付费，并摆脱对单一供应商的议价依赖。
+
+| 车企 | 芯片 | 官方算力 | 状态 |
+|:---:|:---:|:---:|:---|
+| 蔚来 | 神玑 NX9031 | 超 1000 TOPS | 5 nm 车规，500 亿+ 晶体管、32 核 CPU；2024 年 7 月流片，已覆盖蔚来/乐道全系，累计发货超 30 万颗；2026 年 7 月 WAIC 展出 NX9031X 等新品，芯片业务已独立运作 |
+| 小鹏 | 图灵（Turing） | 单颗约 750 TOPS，三颗方案综合超 2200 TOPS | 2025 年 6 月随小鹏 G7 Ultra 交付，是首个量产落地的"三芯"方案 |
+| 理想 | 马赫 100（M100） | 官方称单颗 1280 TOPS | 已发布，为目前国产车企公布的单颗算力上限 |
+
+!!! warning "自研芯片的隐性成本"
+    自研芯片的难点不在流片，而在 **工具链与生态**：编译器、量化工具、算子库、调试工具都要自建，且必须跟上自家算法的迭代速度。对年销量不足百万台的车企，自研的摊薄成本往往高于直接采购——这也是多数车企仍采用"自研 + 外购"双轨策略的原因。
+
+### 3.9 主流平台综合对比
 
 | 芯片平台 | 峰值算力（TOPS） | 制程 | 功耗（W） | TOPS/W | 目标等级 | 量产车企（代表） |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | NVIDIA Orin X | 254 | 7 nm | 60 | 4.2 | L3/L4 | 蔚来、小鹏、理想 |
-| NVIDIA Thor | ~2000 | 4 nm | ~150 | ~13.3 | L3-L5 | 2025-2026 量产 |
+| NVIDIA Thor | 1000（INT8） | 4 nm | ~150 | ~6.7 | L2++/L3/L4 | Mercedes-Benz CLA |
 | 高通 SA8650P | ~50 | 4 nm | ~25 | ~2.0 | L2+ | 长城、极氪 |
-| Tesla HW4 | ~300-500 | 7 nm | ~100 | ~4.0 | L3/L4 | Tesla 全系 |
-| Mobileye EyeQ Ultra | 176 | 5 nm | ~50 | 3.5 | L4 | 极氪、蔚来（ADAS） |
+| 高通 Ride Elite | 未公开 | — | — | — | L2+/L3 | 理想、零跑、极氪等 10 项目 |
+| Tesla AI4（HW4） | ~300-500 | 7 nm | ~100 | ~4.0 | L2+/L4（自定义） | Tesla 全系、Cybercab |
+| Mobileye EyeQ Ultra | 176 | 5 nm | ~50 | 3.5 | L4 | Mobileye Chauffeur/Drive |
 | 华为 MDC 610 | 352 | 7 nm | ~100 | 3.5 | L3/L4 | 问界、阿维塔 |
-| 地平线征程 5 | 128 | 16 nm | ~30 | 4.3 | L2+/L3 | 理想、比亚迪 |
+| 地平线征程 6P | 560 | — | ~70 | ~8.0 | L2+/L3 城区 | 星途（HSD 方案） |
+| 蔚来神玑 NX9031 | 超 1000 | 5 nm | — | — | L2+/L3 | 蔚来、乐道全系 |
+| 小鹏图灵 ×3 | 超 2200（三颗） | — | — | — | L2+/L3 | 小鹏 G7 Ultra |
 | 黑芝麻 A1000 | 58 | 16 nm | ~25 | 2.3 | L2+/L3 | 一汽、东风 |
+
+!!! danger "不要横向比较不同口径的 TOPS"
+    上表的算力数字来自各家官方口径，精度（INT8/FP8/FP4）、是否含 GPU 通用算力、是否为多芯片合计均不统一。例如 Thor 的 1000 TOPS 为 INT8，而"2000"为 FP4 TFLOPS；小鹏的 2200 TOPS 是三颗芯片合计。选型时应以实际模型的端到端帧率与时延实测为准。
 
 ---
 
@@ -469,24 +518,36 @@ NVIDIA Thor 和 AMD MI300 系列均采用了 Chiplet 设计理念。未来自动
 - **稀疏化支持**：硬件原生支持稀疏矩阵运算，在相同算力下处理更大模型
 - **大模型支持**：随着端到端大模型上车，芯片需支持更大的权重存储和更高的内存带宽
 - **多模态融合加速**：硬件层面支持视觉、点云、文本等多模态数据的高效融合处理
+- **低精度浮点**：FP8/FP4 成为新的算力标称口径，Blackwell 一代硬件原生支持 FP4，用于承载 VLA（视觉-语言-动作）与生成式模型负载
 
 ### 8.3 中央计算架构
 
 传统的分布式 ECU 架构正在向 **中央计算架构** 演进：
 
-```
-传统架构（分布式）：
-  ADAS ECU + 座舱 ECU + 车身 ECU + 底盘 ECU + ... （数十个 ECU）
+```mermaid
+graph LR
+    subgraph dist["传统架构（分布式）"]
+        direction TB
+        e1["ADAS ECU"]
+        e2["座舱 ECU"]
+        e3["车身 ECU"]
+        e4["底盘 ECU"]
+        e5["…数十个独立 ECU"]
+    end
 
-中央计算架构：
-  中央计算单元（HPC）
-    ├─ 自动驾驶域
-    ├─ 智能座舱域
-    ├─ 车身控制域
-    └─ 底盘动力域
+    subgraph central["中央计算架构"]
+        direction TB
+        hpc["中央计算单元 HPC"]
+        hpc --> ad["自动驾驶域"]
+        hpc --> ck["智能座舱域"]
+        hpc --> bd["车身控制域"]
+        hpc --> ch["底盘动力域"]
+    end
+
+    e5 ==>|"域控制器整合"| hpc
 ```
 
-中央计算架构要求单一芯片或芯片组具备 **多域融合** 能力，同时处理自动驾驶、座舱交互、车身控制等多种任务。NVIDIA Thor 和高通 SA9000P 正是面向这一趋势设计的。
+中央计算架构要求单一芯片或芯片组具备 **多域融合** 能力，同时处理自动驾驶、座舱交互、车身控制等多种任务。NVIDIA Thor 与高通 Snapdragon Ride Flex / Ride Elite 正是面向这一趋势设计的；2026 年初零跑基于 Ride Elite + Cockpit Elite 发布的跨域中央计算平台是首个量产案例。
 
 ### 8.4 云-边-端协同计算
 
@@ -511,16 +572,19 @@ NVIDIA Thor 和 AMD MI300 系列均采用了 Chiplet 设计理念。未来自动
 ## 参考资料
 
 1. NVIDIA. *NVIDIA DRIVE Orin Technical Reference Manual*. NVIDIA Developer Documentation.
-2. NVIDIA. *NVIDIA DRIVE Thor Architecture Overview*. NVIDIA GTC Conference, 2024.
-3. Tesla. *Tesla AI Day 2022: FSD Computer and Dojo*. Tesla Official Presentation.
-4. Mobileye. *EyeQ Product Family Technical Specifications*. Mobileye Official Documentation.
-5. Qualcomm. *Snapdragon Ride Platform: Scalable Autonomous Driving Solutions*. Qualcomm Technologies.
-6. Horizon Robotics. *征程系列芯片技术白皮书*. 地平线官方文档.
-7. 华为. *昇腾 MDC 智能驾驶计算平台技术规格*. 华为官方文档.
-8. Black Sesame Technologies. *华栾 A1000 系列产品手册*. 黑芝麻智能官方文档.
-9. ISO 26262:2018. *Road vehicles — Functional safety*. International Organization for Standardization.
-10. AEC-Q100 Rev. J. *Failure Mechanism Based Stress Test Qualification for Integrated Circuits*. Automotive Electronics Council.
-11. 邓志东 等. *自动驾驶技术概论*. 清华大学出版社, 2023.
-12. S. Liu et al. *"A Survey on Computing Architectures for Autonomous Driving."* IEEE Transactions on Intelligent Transportation Systems, 2023.
-13. Y. Li et al. *"BEVFormer: Learning Bird's-Eye-View Representation from Multi-Camera Images via Spatiotemporal Transformers."* ECCV, 2022.
-14. A. Jouppi et al. *"In-Datacenter Performance Analysis of a Tensor Processing Unit."* ISCA, 2017.
+2. NVIDIA. *NVIDIA DRIVE AGX Thor Platform for Developers*. NVIDIA Developer Documentation, 2026.
+3. NVIDIA. *"NVIDIA DRIVE AV Software Debuts in All-New Mercedes-Benz CLA."* NVIDIA Blog, 2026 年 1 月.
+4. NVIDIA. *"BYD, Geely, Isuzu and Nissan Adopt NVIDIA DRIVE Hyperion for Level 4 Vehicles."* NVIDIA Newsroom, 2026.
+5. Tesla. *Tesla AI Day 2022: FSD Computer and Dojo*. Tesla Official Presentation.
+6. Electrek. *"Tesla taped out AI5 chip, Musk says."* 2026 年 4 月.
+7. Mobileye. *EyeQ Product Family Technical Specifications*. Mobileye Official Documentation.
+8. Qualcomm. *Snapdragon Ride Elite / Cockpit Elite Product Brief*. Qualcomm Technologies, 2026.
+9. Horizon Robotics. *征程 6 系列芯片与 HSD 技术白皮书*. 地平线官方文档, 2025.
+10. 华为. *乾崑 ADS 5 与新一代 MDC 智能驾驶计算平台*. 2026 华为乾崑技术大会, 2026 年 4 月.
+11. Black Sesame Technologies. *华栾 A1000 系列产品手册*. 黑芝麻智能官方文档.
+12. ISO 26262:2018. *Road vehicles — Functional safety*. International Organization for Standardization.
+13. AEC-Q100 Rev. J. *Failure Mechanism Based Stress Test Qualification for Integrated Circuits*. Automotive Electronics Council.
+14. 邓志东 等. *自动驾驶技术概论*. 清华大学出版社, 2023.
+15. S. Liu et al. *"A Survey on Computing Architectures for Autonomous Driving."* IEEE Transactions on Intelligent Transportation Systems, 2023.
+16. Y. Li et al. *"BEVFormer: Learning Bird's-Eye-View Representation from Multi-Camera Images via Spatiotemporal Transformers."* ECCV, 2022.
+17. A. Jouppi et al. *"In-Datacenter Performance Analysis of a Tensor Processing Unit."* ISCA, 2017.

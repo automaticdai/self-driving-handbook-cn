@@ -11,7 +11,19 @@
 
 ### 1.1 OpenSCENARIO
 
-OpenSCENARIO 是 ASAM 组织制定的基于 XML 的场景描述标准，被 CARLA、esmini、VTD 等主流仿真器广泛支持。
+OpenSCENARIO 是 ASAM 组织制定的场景描述标准，被 CARLA、esmini、VTD 等主流仿真器广泛支持。
+
+!!! warning "OpenSCENARIO 已拆分为两个独立标准，不是版本升级关系"
+    2024 年 1 月，ASAM 宣布 1.x 与 2.x 作为 **两个独立项目** 继续演进，并分别改名：
+
+    | 标准 | 原名 | 形式 | 抽象层次 |
+    | --- | --- | --- | --- |
+    | **OpenSCENARIO XML**（当前 1.3） | OpenSCENARIO 1.x | XML Schema，Storyboard → Act → Maneuver → Event → Action 层级 + 触发条件 | 具体（concrete）+ 逻辑（logical） |
+    | **OpenSCENARIO DSL**（当前 2.1，2.2 于 2026 年初公开评审） | OpenSCENARIO 2.x | 文本化 DSL（EBNF），声明式、意图驱动，支持表达式与逻辑 | 抽象（abstract）+ 逻辑 + 具体 |
+
+    因此"升级到 OpenSCENARIO 2.0"是一种误解：DSL 不是 XML 的新版本，而是面向 **大规模测试覆盖** 的另一套语言——它能把一个机动写成可复用、可参数化的抽象逻辑，从而由一条描述展开出大量具体场景。选型取决于需求：复现单条确定场景用 XML；追求覆盖率驱动的测试生成用 DSL。
+
+    本节以下内容基于 **OpenSCENARIO XML**。
 
 **核心概念：**
 

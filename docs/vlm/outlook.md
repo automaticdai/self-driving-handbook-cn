@@ -20,7 +20,15 @@
 | Talk2BEV | 2023 | BEV + LLM | 多视图相机 + LiDAR | 空间推理 QA | LLaVA | 在 BEV 空间上做自然语言空间推理 |
 | Dolphins | 2024 | 多模态对话 | 视频 | 驾驶理解对话 | 视觉-语言模型 | 驾驶场景视频问答；可处理时序信息 |
 | Lingo-1 | 2023 | 视觉-语言-动作 | 视频 | 可解释驾驶 | 自研架构 | Wayve 出品；注释与动作联合训练 |
-| EMMA | 2024 | 统一多模态 | 多视图相机 | 端到端感知-规划 | Gemini | 统一文本输出格式；Google DeepMind 出品 |
+| EMMA | 2024 | 统一多模态 | 多视图相机 | 端到端感知-规划 | Gemini | 统一文本输出格式；Waymo/Google 出品，但因空间推理与算力问题未直接量产 |
+| **Alpamayo 1**（原 Alpamayo-R1） | 2025–26 | 推理型 VLA | 多摄像头视频 | 轨迹 + 推理链 | Cosmos-Reason | NVIDIA 开源 10B 模型；Chain-of-Causation 数据集 + 扩散轨迹解码器；商用许可 |
+| **小鹏 VLA 2.0** | 2026 | 去语言层 VLA | 多视图相机 | 视觉直连动作 | 自研 | 全球首个量产的去语言层端到端大模型；决策时延 < 80 ms |
+| **理想 MindVLA / MindVLA-o1** | 2026 | 原生多模态 MoE | 多视图相机 | 3D 空间理解 + 行为生成 | 自研 | 同一 VLA 模型同时驱动车辆与机器人 |
+
+!!! info "2025–2026 年的三个转折"
+    1. **VLA 取代 VLM 成为主流表述**：单纯的"看懂场景"不够，模型必须直接输出动作（Action）。
+    2. **推理链从"可解释性装饰"变成训练信号**：Alpamayo 的 Chain-of-Causation 把因果推理链作为监督目标，而非事后解释。
+    3. **语言层被重新去掉**：显式的文字中间表示带来时延与信息损失，量产方案转向隐式 token（见下方 7.1）。
 
 
 ---
@@ -40,8 +48,12 @@
 | Talk2BEV | ~80% | — | — | ~1.0 s |
 | EMMA | ~85% | 1.06 m | 0.14 | ~1.5 s |
 
-!!! note "关于延迟"
-    当前大多数 VLM 系统的推理延迟在 0.8–2.0 秒范围内，远高于传统规划系统的 10–50 ms 水平。这是制约 VLM 实车部署的核心瓶颈之一。
+!!! note "关于延迟：研究原型与量产方案已分道"
+    上表这些 **研究原型** 的推理延迟在 0.8–2.0 秒范围内，远高于传统规划系统的 10–50 ms 水平——这曾是制约 VLM 实车部署的核心瓶颈。
+    
+    但 2026 年的量产 VLA 已经绕过了这个瓶颈：小鹏 VLA 2.0 的决策时延 **< 80 ms**。差别不在于把同样的模型加速了 20 倍，而在于换了架构——量产方案去掉了显式语言输出（上表系统大多要生成文字，自回归解码本身就是秒级开销的来源），改为隐式 token 直连动作，并把大模型留在云端、车端只跑蒸馏后的小模型。
+    
+    因此上表的延迟数字应理解为"生成文字解释的 VLM 的代价"，而非 VLA 路线的固有上限。
 
 
 ---
@@ -183,13 +195,17 @@ VLM 从互联网数据中学习可能继承社会偏见：
 
 ## 7. 未来方向详解
 
-### 7.1 实时 VLM（目标 < 100 ms）
+### 7.1 实时 VLM（< 100 ms 目标已达成）
+
+!!! success "该目标已在 2026 年量产实现"
+    小鹏 VLA 2.0 将决策时延从 200 ms 压缩至 **< 80 ms**（推理效率提升约 12 倍），于 2026 年 Q1 量产上车（P7+、G7、X9 等）。关键不是单一优化，而是三者叠加：**去掉显式语言层** + **云端 720 亿 / 车端 30 亿参数的两级蒸馏架构** + **自研图灵芯片（三颗合计约 2250 TOPS）**。工程上的硬指标是让模型推理帧率与摄像头帧率完全一致。
 
 实现实时推理需要从硬件和架构两个维度同时突破：
 
-- **硬件层面**：车载专用 AI 芯片（如 NVIDIA Thor、地平线征程 6）提供 >1000 TOPS 算力；NPU 定制化加速 Transformer 推理
-- **架构层面**：模型蒸馏（将大模型知识迁移到小模型）、稀疏注意力机制、投机解码（Speculative Decoding）、提前退出（Early Exit）
+- **硬件层面**：车载专用 AI 芯片（如 NVIDIA Thor、地平线征程 6P、车企自研芯片）提供 500–2000 TOPS 级算力；NPU 定制化加速 Transformer 推理（见 [自动驾驶计算芯片](../hardware/compute_chips.md)）
+- **架构层面**：模型蒸馏（将大模型知识迁移到小模型）、稀疏注意力机制、投机解码（Speculative Decoding）、提前退出（Early Exit）；**去语言层**——用隐式 token 替代文字中间表示
 - **系统层面**：异步推理管线设计；VLM 慢系统与传统快系统并行运行
+- **两级部署**：云端保留超大基座模型用于训练与蒸馏，车端只跑几十亿参数的轻量模型
 
 ### 7.2 具身对齐（Embodied Alignment）
 
@@ -250,6 +266,11 @@ VLM 从互联网数据中学习可能继承社会偏见：
 - **GAIA-1**（Wayve, 2023）：基于视频-文本-动作多模态数据训练的世界模型，能够生成高保真的驾驶场景视频，并可通过语言指令控制生成内容
 - **DriveDreamer**（2023）：结合真实驾驶数据训练的世界模型，支持结构化交通约束下的未来场景预测
 - **Drive-WM**（2024）：面向自动驾驶规划的多视图世界模型，将世界模型预测直接用于改善规划性能
+- **GAIA-3**（Wayve, 2025 年 12 月）：150 亿参数，定位从"生成"转向 **可重复评测**，支持跨车型与跨环境的一致性验证
+- **Waymo World Model**（2026 年 2 月）：基于 DeepMind **Genie 3**，输出摄像头 + LiDAR 的多传感器高保真数据，用于生成极端边缘场景
+- **NVIDIA Cosmos 3**（2026）：开源物理 AI 基础模型，mixture-of-transformers 架构统一处理文本/图像/视频/音频/动作，并以 Cosmos-Reason 作为 Alpamayo 的 VLM 底座
+
+上述模型的技术细节见 [世界模型](../algorithm/world_models.md) 专章。
 
 !!! info "融合趋势"
     VLM 与世界模型的融合代表了自动驾驶 AI 的重要发展方向。VLM 提供高层语义理解和常识推理，世界模型提供底层物理仿真和状态预测，两者结合有望实现更安全、更智能的自动驾驶系统。
@@ -261,21 +282,30 @@ VLM 从互联网数据中学习可能继承社会偏见：
 
 ### 9.1 产业落地时间线
 
-| 阶段 | 时间范围 | 里程碑 |
-|:---|:---:|:---|
-| 研究探索期 | 2023–2024 | VLM 驾驶能力验证；开放数据集和基准建立 |
-| 工程验证期 | 2025–2026 | 车载部署原型；实时推理方案验证；限定场景闭环测试 |
-| 有限量产期 | 2027–2028 | ODD 限定的 L4 场景量产搭载；VLM 作为辅助决策层 |
-| 规模应用期 | 2029+ | 跨场景泛化 VLM 量产；端云协同成为标准架构 |
+| 阶段 | 时间范围 | 里程碑 | 状态 |
+|:---|:---:|:---|:---:|
+| 研究探索期 | 2023–2024 | VLM 驾驶能力验证；开放数据集和基准建立 | ✅ 已完成 |
+| 工程验证期 | 2025 | 车载部署原型；实时推理方案验证；限定场景闭环测试 | ✅ 已完成 |
+| **首批量产期** | **2026** | **VLA 进入乘用车量产：小鹏 VLA 2.0（Q1，< 80 ms）、理想 MindVLA；端云两级架构成为标准做法；NVIDIA 开源 Alpamayo 建立公共基线** | **⬅ 当前阶段** |
+| 规模普及期 | 2027–2028 | VLA 下沉至中低价位车型；世界模型评测进入监管认可的验证流程 | 预期 |
+| 跨场景泛化期 | 2029+ | 同一 VLA 基座跨车辆/机器人复用；形式化验证与安全认证路径成熟 | 预期 |
+
+!!! warning "这张表在 2025 年的预测偏保守"
+    本手册早前版本把 2025–2026 判断为"工程验证期"、2027–2028 才"有限量产"。实际进度快了约两年：VLA 在 2026 年 Q1 就已量产上车。低估的原因主要是两点——**车企自研芯片补齐了车端算力**，以及**去语言层架构意外地同时解决了时延与精度**（小鹏方面形容其能力"涌现"过程极其突然）。这提示对本领域做时间线预测时应保持谨慎。
 
 ### 9.2 主要厂商布局
 
-- **Wayve**：Lingo 系列、GAIA-1 世界模型；获得软银 10 亿美元投资
-- **Google DeepMind**：EMMA 系统；Gemini 模型赋能自动驾驶
-- **Tesla**：FSD V12 端到端架构；虽未公开采用 VLM 但技术路线趋近
-- **NVIDIA**：Drive Thor 平台提供算力基础；投资多家 VLM 自驾初创公司
-- **地平线**：征程系列芯片提供车载大模型推理能力
-- **华为**：ADS 3.0 引入大模型决策模块
+- **Wayve**：Lingo 系列；世界模型迭代至 **GAIA-3**（150 亿参数，聚焦评测与验证）；获得软银 10 亿美元投资
+- **Waymo / Google DeepMind**：研究模型 EMMA（Gemini 驱动）→ 量产车队实际运行的 **Waymo Foundation Model**（端到端训练 + 持续安全验证）；**Waymo World Model** 基于 Genie 3 做仿真
+- **Tesla**：FSD **V14**，Summon/FSD/Robotaxi 统一为单一模型；未使用显式语言层，但端到端路线与 VLA 高度趋近
+- **NVIDIA**：**Alpamayo 1** 开源 10B 推理型 VLA + Cosmos 3 世界模型 + Thor/Hyperion 10 算力平台，形成"模型-仿真-芯片"全栈开放生态
+- **小鹏**：**VLA 2.0** 去语言层架构，全球首个量产；自研图灵芯片提供车端算力
+- **理想**：**MindVLA / MindVLA-o1** 原生多模态 MoE，同一模型驱动车辆与机器人
+- **蔚来**：**NWM** 世界模型 + 闭环强化学习；自研神玑 NX9031 芯片
+- **地平线**：征程 6P 与 HSD 全栈方案提供车载大模型推理能力
+- **华为**：**乾崑 ADS 5**（2026 年 4 月）与 WEWA 2.0 架构，云端世界模型引入多智能体博弈机制
+
+各家中国厂商的完整技术路线对比见 [中国本土玩家](../casestudy/chinese_players.md)。
 
 ### 9.3 创业公司生态
 
@@ -348,6 +378,11 @@ VLM 从互联网数据中学习可能继承社会偏见：
 15. Li, J., Li, D., et al. "BLIP-2: Bootstrapping Language-Image Pre-training with Frozen Image Encoders and Large Language Models." *ICML*, 2023.
 16. ISO 26262:2018. "Road Vehicles — Functional Safety." International Organization for Standardization.
 17. EU AI Act. "Regulation (EU) 2024/1689 — Harmonised Rules on Artificial Intelligence." European Parliament and Council, 2024.
+18. NVIDIA. "Alpamayo-R1: Bridging Reasoning and Action Prediction for Generalizable Autonomous Driving in the Long Tail." *arXiv preprint arXiv:2511.00088*, 2025.
+19. NVIDIA. *"NVIDIA Announces Alpamayo Family of Open-Source AI Models and Tools."* NVIDIA Newsroom, CES 2026.
+20. Wayve. *"Wayve launches GAIA-3, advancing world models from simulation to evaluation."* 2025 年 12 月.
+21. Waymo. *"The Waymo World Model: A New Frontier For Autonomous Driving Simulation."* Waymo Blog, 2026 年 2 月.
+22. 小鹏汽车. *第二代 VLA 技术说明（VLA 2.0）*. 2026.
 18. 中华人民共和国工业和信息化部.《智能网联汽车准入和上路通行试点实施指南》, 2023.
 19. Dosovitskiy, A., et al. "CARLA: An Open Urban Driving Simulator." *CoRL*, 2017.
 20. Caesar, H., et al. "nuScenes: A Multimodal Dataset for Autonomous Driving." *CVPR*, 2020.
