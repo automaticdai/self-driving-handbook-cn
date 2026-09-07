@@ -385,6 +385,14 @@ MagicDrive 专注于多视角、可控的驾驶视频生成：
 - 条件控制包括：3D 边界框布局、BEV 地图、文本描述
 - 可精确控制场景中车辆和行人的位置、类型和运动轨迹
 
+**WoVogen（World-Volume Generation，2024）**：
+
+WoVogen 在**三维体积空间**中进行场景生成，而非逐视角生成图像：
+
+- 先构建场景的体积表示，再从体积渲染出各摄像头视角
+- 由于所有视角共享同一份三维体积，多摄像头之间的几何一致性由构造保证
+- 相比 DriveDreamer 等逐视角扩散方案，显著缓解了"同一物体在相邻视角中位置/形状矛盾"的问题
+
 **DriveWM（2024）**：
 
 DriveWM 将世界模型与多视角一致性显式结合：
@@ -629,14 +637,16 @@ $$\text{FVD} \propto N^{-\alpha} \cdot D^{-\beta}$$
 
 13. **Gao, R., et al.** "MagicDrive: Street View Generation with Diverse 3D Geometry Control." *ICLR 2024*. [arXiv:2310.02601](https://arxiv.org/abs/2310.02601)
 
-14. **Huang, Y., et al.** "GaussianFormer: Scene as Gaussians for Vision-Based 3D Semantic Occupancy Prediction." *ECCV 2024*.
+14. **Lu, J., et al.** "WoVoGen: World Volume-aware Diffusion for Controllable Multi-camera Driving Scene Generation." *ECCV 2024*. [arXiv:2312.02934](https://arxiv.org/abs/2312.02934)
 
-15. **Wang, Y., et al.** "Driving into the Future: Multiview Visual Forecasting and Planning with World Model for Autonomous Driving (DriveWM)." *CVPR 2024*.
+15. **Huang, Y., et al.** "GaussianFormer: Scene as Gaussians for Vision-Based 3D Semantic Occupancy Prediction." *ECCV 2024*.
 
-16. **Wayve.** *"Wayve launches GAIA-3, advancing world models from simulation to evaluation."* Wayve Press Release, 2025 年 12 月.
+16. **Wang, Y., et al.** "Driving into the Future: Multiview Visual Forecasting and Planning with World Model for Autonomous Driving (DriveWM)." *CVPR 2024*.
 
-17. **Waymo.** *"The Waymo World Model: A New Frontier For Autonomous Driving Simulation."* Waymo Blog, 2026 年 2 月.
+17. **Wayve.** *"Wayve launches GAIA-3, advancing world models from simulation to evaluation."* Wayve Press Release, 2025 年 12 月.
 
-18. **NVIDIA.** *"NVIDIA Launches Cosmos 3, the Open Frontier Foundation Model for Physical AI."* NVIDIA Newsroom, 2026.
+18. **Waymo.** *"The Waymo World Model: A New Frontier For Autonomous Driving Simulation."* Waymo Blog, 2026 年 2 月.
 
-19. **NVIDIA.** *"Alpamayo-R1: Bridging Reasoning and Action Prediction for Generalizable Autonomous Driving in the Long Tail."* [arXiv:2511.00088](https://arxiv.org/abs/2511.00088), 2025.
+19. **NVIDIA.** *"NVIDIA Launches Cosmos 3, the Open Frontier Foundation Model for Physical AI."* NVIDIA Newsroom, 2026.
+
+20. **NVIDIA.** *"Alpamayo-R1: Bridging Reasoning and Action Prediction for Generalizable Autonomous Driving in the Long Tail."* [arXiv:2511.00088](https://arxiv.org/abs/2511.00088), 2025.

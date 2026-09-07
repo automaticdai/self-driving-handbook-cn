@@ -5,6 +5,10 @@
 本章系统梳理从传统车载总线到现代车载以太网、网络拓扑、中间件协议、时间敏感网络、信息安全以及 OTA 升级等关键技术，帮助读者建立完整的车载通信知识体系。
 
 
+!!! info "本节包含"
+    - [网络与协议](communication_network_protocols.md) — 传统总线、车载以太网、拓扑演进、SOME/IP 与 DDS、TSN、网络诊断
+    - [安全与升级](communication_security_ota.md) — SecOC、IDS/IPS、安全启动链、HSM、OTA 体系与灰度发布
+
 ## 1. 传统车载总线
 
 ### 1.1 CAN（Controller Area Network）

@@ -5,6 +5,12 @@
 自动驾驶软件栈是一个高度复杂的实时系统，需要将传感器输入在 100–200 ms 内转化为车辆控制指令，同时保证功能安全和系统可靠性。整个系统可以分为五大核心模块，形成**感知—预测—规划—控制**的完整闭环。
 
 
+!!! info "本节包含"
+    - [架构与时延](sw_overview_arch_timing.md) — 软件分层、模块边界设计、端到端时延分析、实时调度与 GPU/NPU 调度
+    - [中间件与部署](sw_overview_middleware_deployment.md) — 中间件选型、DDS、共享内存零拷贝、云边协同、可观测性与发布管理
+    - [数据流水线](data_pipeline.md) — 数据闭环的完整实现（本页仅给出概览）
+    - [开源平台对比](../system/open_source_platforms.md) — Apollo/Autoware 等开源栈的横向对比
+
 ## 整体架构
 
 ```
