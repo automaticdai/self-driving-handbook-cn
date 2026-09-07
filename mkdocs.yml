@@ -136,6 +136,7 @@ nav:
 # Theme
 theme:
   name: 'material'
+  custom_dir: overrides
   language: 'zh'
   logo: ""
   palette:
