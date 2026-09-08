@@ -124,7 +124,9 @@ nav:
       - casestudy/apollo_tech_stack.md
       - casestudy/apollo_operations.md
     - casestudy/waymo.md
-    - casestudy/tesla.md
+    - 'Tesla 案例':
+      - casestudy/tesla.md
+      - casestudy/tesla_cybercab.md
     - casestudy/chinese_players.md
     - casestudy/robotaxi.md
   - '8. 参与贡献':
