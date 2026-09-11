@@ -17,13 +17,13 @@ site_dir: site
 nav:
   - 自动驾驶技术指南: index.md
   - '1. 概述':
-    - intro/main.md
+    - intro/index.md
     - intro/define.md
     - intro/category.md
     - intro/history.md
     - intro/glossary.md
   - '2. 系统':
-    - system/main.md
+    - system/index.md
     - system/architecture.md
     - system/vehicle.md
     - '车联网 V2X':
@@ -43,7 +43,7 @@ nav:
     - system/cybersecurity.md
     - system/regulation.md
   - '3. 硬件':
-    - hardware/main.md
+    - hardware/index.md
     - hardware/hw_overview.md
     - '计算平台 CCU':
       - hardware/ccu.md
@@ -67,7 +67,7 @@ nav:
       - hardware/camera_imaging_calibration.md
       - hardware/camera_sync_reliability.md
   - '4. 算法':
-    - algorithm/main.md
+    - algorithm/index.md
     - '软件框架':
       - algorithm/sw_overview.md
       - algorithm/sw_overview_arch_timing.md
@@ -100,7 +100,7 @@ nav:
     - algorithm/datasets_benchmarks.md
     - algorithm/nlp.md
   - '5. 仿真测试':
-    - simulation/main.md
+    - simulation/index.md
     - simulation/platforms.md
     - simulation/environment.md
     - simulation/sensors.md
@@ -109,7 +109,7 @@ nav:
     - simulation/metrics.md
     - simulation/sim2real.md
   - '6. 视觉语言大模型':
-    - vlm/main.md
+    - vlm/index.md
     - vlm/foundation.md
     - vlm/scene_understanding.md
     - vlm/decision_planning.md
@@ -118,7 +118,7 @@ nav:
     - vlm/deployment.md
     - vlm/outlook.md
   - '7. 实例':
-    - casestudy/main.md
+    - casestudy/index.md
     - 'Apollo 案例':
       - casestudy/apollo.md
       - casestudy/apollo_tech_stack.md
@@ -141,6 +141,13 @@ theme:
   custom_dir: overrides
   language: 'zh'
   logo: ""
+  features:
+    # 章节标签本身即为该章 hub 页的链接（nav 中每节首个条目），
+    # 避免"先点章节展开、再点章节导读"两步操作。
+    - navigation.indexes
+    - navigation.top
+    - navigation.tracking
+    - toc.follow
   palette:
     primary: 'white'
     accent: 'red'
@@ -168,6 +175,17 @@ plugins:
       type: date
       locale: zh
       fallback_to_build_date: true
+  # 章节导读页由 <chapter>/main.md 改名为 <chapter>/index.md（启用 navigation.indexes
+  # 需要文件名为 index），旧地址 /<chapter>/main/ 仍有站外入链，此处做永久跳转。
+  - redirects:
+      redirect_maps:
+        intro/main.md: intro/index.md
+        system/main.md: system/index.md
+        hardware/main.md: hardware/index.md
+        algorithm/main.md: algorithm/index.md
+        simulation/main.md: simulation/index.md
+        vlm/main.md: vlm/index.md
+        casestudy/main.md: casestudy/index.md
 
 # Extra
 extra_javascript:
