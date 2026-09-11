@@ -40,6 +40,16 @@
 
 ---
 
+## 赞助支持
+
+如果本指南对你有帮助，欢迎通过支付宝或微信支付支持我们。你的支持会用于内容的持续更新与维护，非常感谢！
+
+<p align="left">
+  <img src="_static/img/payment-qr-codes.png" alt="支付宝 / 微信支付" width="520">
+</p>
+
+---
+
 ## 版权声明
 
 ![cc-by-sa-4.0](https://i.creativecommons.org/l/by-sa/4.0/88x31.png)
