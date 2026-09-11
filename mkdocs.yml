@@ -189,8 +189,10 @@ plugins:
 
 # Extra
 extra_javascript:
-  - 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
+  # 顺序不能颠倒：MathJax 3 在脚本加载时读取 window.MathJax，
+  # 配置文件必须排在 CDN 包之前，否则 macros/tagformat/tagSide 会被静默丢弃。
   - _static/js/mathjaxhelper.js
+  - 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
 
 extra_css:
     - _static/css/extra.css
