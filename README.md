@@ -24,7 +24,23 @@
 pip install -r requirements.txt
 mkdocs serve           # 本地预览，监听 http://127.0.0.1:8000
 mkdocs build --strict  # 严格构建（CI 使用）
+python scripts/check_seo.py  # 检查构建后的 SEO 元数据（CI 使用）
 ```
+
+## 搜索与分享元数据
+
+页面标题默认使用一级标题。可在 Markdown 文件顶部添加 YAML 元数据，单独指定搜索标题和摘要：
+
+```yaml
+---
+title: 页面标题
+description: 用一两句话准确概括本页内容，突出本页主题。
+---
+```
+
+未设置 `description` 时，`scripts/seo.py` 从正文首个有效段落生成摘要。模板同时输出 Open Graph、Twitter 卡片和面包屑结构化数据；MkDocs 自动生成 canonical URL 与 `sitemap.xml`。
+
+线上站点地图为 <https://yfrobotics.github.io/self-driving-handbook-cn/sitemap.xml>，可提交到 Google Search Console。本站部署在 GitHub Pages 子路径下，爬虫只读取域名根目录的 `robots.txt`，因此本仓库不添加子路径下无效的爬虫规则文件。
 
 ## 贡献
 

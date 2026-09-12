@@ -1,8 +1,8 @@
 # Site Configurations
 site_name: "自动驾驶指南"
-site_description: 自动驾驶历史与技术
+site_description: 中文自动驾驶技术指南，系统介绍自动驾驶分级、系统架构、传感器、感知定位、规划控制、仿真测试与视觉语言模型，结合 Apollo、Waymo、Tesla 等案例讲解工程实践。
 site_author: "YFRL"
-site_url: https://yfrobotics.github.io/self-driving-handbook-cn
+site_url: https://yfrobotics.github.io/self-driving-handbook-cn/
 strict: true
 
 # Repository
@@ -12,6 +12,9 @@ edit_uri: edit/master/docs/
 
 docs_dir: docs
 site_dir: site
+
+hooks:
+  - scripts/seo.py
 
 # Navigation
 nav:
