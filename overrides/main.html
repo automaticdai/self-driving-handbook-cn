@@ -2,6 +2,23 @@
 
 {% block extrahead %}
   {{ super() }}
+  {% if page and page.canonical_url %}
+    {% set title = (page.meta.title or page.title) ~ ' - ' ~ config.site_name %}
+    <meta property="og:type" content="{{ 'website' if page.is_homepage else 'article' }}">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:site_name" content="{{ config.site_name | e }}">
+    <meta property="og:title" content="{{ title | striptags | e }}">
+    <meta property="og:description" content="{{ page.meta.description | e }}">
+    <meta property="og:url" content="{{ page.canonical_url | e }}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ title | striptags | e }}">
+    <meta name="twitter:description" content="{{ page.meta.description | e }}">
+    {% if seo_breadcrumbs %}
+      <script type="application/ld+json">{{ seo_breadcrumbs | tojson }}</script>
+    {% endif %}
+  {% else %}
+    <meta name="robots" content="noindex">
+  {% endif %}
   <meta name="google-adsense-account" content="ca-pub-8821428748194648">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8821428748194648"
      crossorigin="anonymous"></script>
